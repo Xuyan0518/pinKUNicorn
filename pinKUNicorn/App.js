@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Dimensions, StatusBar, TouchableOpacity, Linking } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, StatusBar, TouchableOpacity, Linking, Image } from 'react-native';
 import ViewPager from '@react-native-community/viewpager';
 import { Video } from 'expo-av';
 
@@ -11,9 +11,10 @@ const videos = [
 ];
 
 const products = [
-  { id: 1, name: 'Product 1', url: 'https://example.com/product1' },
-  { id: 2, name: 'Product 2', url: 'https://example.com/product2' },
-  { id: 3, name: 'Product 3', url: 'https://example.com/product3' },
+  { id: 1, name: 'Product 1', url: 'https://example.com/product1', image: require('./resources/product1.jpg') },
+  { id: 2, name: 'Product 2', url: 'https://example.com/product2', image: require('./resources/product2.jpg') },
+  { id: 3, name: 'Product 3', url: 'https://example.com/product3', image: require('./resources/product3.jpg') },
+  { id: 4, name: 'Product 4', url: 'https://example.com/product4', image: require('./resources/product4.jpg') },
 ];
 
 const VideoItem = ({ source, isActive }) => {
@@ -50,16 +51,22 @@ const ProductPage = () => {
 
   return (
     <View style={styles.productPage}>
-      <Text style={styles.productPageTitle}>Recommended Products</Text>
-      {products.map((product) => (
-        <TouchableOpacity
-          key={product.id}
-          style={styles.productItem}
-          onPress={() => handleProductPress(product.url)}
-        >
-          <Text style={styles.productName}>{product.name}</Text>
-        </TouchableOpacity>
-      ))}
+      <Text style={styles.productPageTitle}>Trending of Today</Text>
+      <View style={styles.productGrid}>
+        {products.map((product) => (
+          <TouchableOpacity
+            key={product.id}
+            style={styles.productItem}
+            onPress={() => handleProductPress(product.url)}
+          >
+            <Image source={product.image} style={styles.productImage} />
+          </TouchableOpacity>
+        ))}
+      </View>
+      <View style={styles.tailorTaste}>
+        <Text style={styles.tailorTasteText}>Didn't see anything you like?</Text>
+        <Text style={styles.tailorTasteText}>Tailor your taste!</Text>
+      </View>
     </View>
   );
 };
@@ -139,24 +146,48 @@ const styles = StyleSheet.create({
   productPage: {
     flex: 1,
     backgroundColor: 'white',
-    justifyContent: 'center',
-    alignItems: 'center',
+    padding: 20,
+    paddingTop: 80, // Increase this value to add more padding at the top
   },
   productPageTitle: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 40,
+  },
+  productGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    marginHorizontal: 10, // Add some horizontal margin if needed
   },
   productItem: {
-    backgroundColor: '#f0f0f0',
-    padding: 10,
-    margin: 10,
-    borderRadius: 5,
-    width: 200,
+    width: '48%', // You can increase this to make the items wider
+    aspectRatio: 0.7, // Keep this if you want square items
+    marginBottom: 25, // Increase bottom margin for more space between rows
+    borderWidth: 1,
+    borderColor: 'red',
+    borderRadius: 10,
+    overflow: 'hidden',
+    padding: 5,
+    justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: 'white',
   },
-  productName: {
-    fontSize: 16,
+  productImage: {
+    width: '100%',
+    height: '100%',
+    resizeMode: 'contain', // or 'cover' if you want to fill the entire space
+  },
+  tailorTaste: {
+    marginTop: 20,
+    borderWidth: 1,
+    borderColor: 'red',
+    borderRadius: 10,
+    padding: 10,
+  },
+  tailorTasteText: {
+    textAlign: 'center',
+    color: 'red',
   },
 });
 
