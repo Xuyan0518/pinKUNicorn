@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import { View, StyleSheet, Dimensions, StatusBar } from 'react-native';
 import ViewPager from '@react-native-community/viewpager';
 import { Video } from 'expo-av';
@@ -10,7 +10,7 @@ const videos = [
   { id: 2, uri: require('./resources/v2.mp4') },
 ];
 
-const VideoItem = ({ source }) => {
+const VideoItem = ({ source, isCurrent }) => {
   const video = useRef(null);
 
   return (
@@ -20,7 +20,7 @@ const VideoItem = ({ source }) => {
         source={source}
         style={styles.video}
         resizeMode="cover"
-        shouldPlay
+        shouldPlay={isCurrent}
         isLooping
       />
     </View>
@@ -29,6 +29,12 @@ const VideoItem = ({ source }) => {
 
 const App = () => {
   const viewPagerRef = useRef(null);
+  const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
+
+  const onPageSelected = (event) => {
+    const { position } = event.nativeEvent;
+    setCurrentVideoIndex(position);
+  };
 
   return (
     <View style={styles.container}>
@@ -38,10 +44,11 @@ const App = () => {
         style={styles.viewPager}
         initialPage={0}
         orientation="vertical"
+        onPageSelected={onPageSelected}
       >
-        {videos.map(video => (
+        {videos.map((video, index) => (
           <View key={video.id} style={styles.page}>
-            <VideoItem source={video.uri} />
+            <VideoItem source={video.uri} isCurrent={index === currentVideoIndex} />
           </View>
         ))}
       </ViewPager>
