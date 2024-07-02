@@ -2,6 +2,8 @@ import React, { useRef, useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Dimensions, StatusBar, TouchableOpacity, Linking, Image } from 'react-native';
 import ViewPager from '@react-native-community/viewpager';
 import { Video } from 'expo-av';
+import { FontAwesomeIcon } from '@fortawesome/react-native-fontawesome';
+import { faHome, faUserFriends, faPlus, faEnvelope, faUser, faShop, faShoppingBag, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 
 const { height, width } = Dimensions.get('window');
 
@@ -111,6 +113,11 @@ const App = () => {
   return (
     <View style={styles.container}>
       <StatusBar hidden />
+      <View style={styles.header}>
+        <Text style={styles.headerText}>Friends</Text>
+        <Text style={styles.headerText}>Following</Text>
+        <Text style={styles.headerTextActive}>For You</Text>
+      </View>
       <ViewPager
         ref={viewPagerRef}
         style={styles.viewPager}
@@ -120,6 +127,27 @@ const App = () => {
       >
         {pages.map((page, index) => renderPage(page, index))}
       </ViewPager>
+      <View style={styles.bottomBar}>
+      <TouchableOpacity style={styles.bottomBarButton}>
+          <FontAwesomeIcon icon={faHome} size={20} color="white" />
+          <Text style={styles.bottomBarText}>Home</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.bottomBarButton}>
+          <FontAwesomeIcon icon={faShoppingBag} size={20} color="white"/>
+          <Text style={styles.bottomBarText}>Shop</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.bottomBarButtonActive}>
+          <FontAwesomeIcon icon={faPlus} size={20} color="black" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.bottomBarButton}>
+          <FontAwesomeIcon icon={faEnvelope} size={20} color="white" />
+          <Text style={styles.bottomBarText}>Inbox</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.bottomBarButton}>
+          <FontAwesomeIcon icon={faUser} size={20} color="white" />
+          <Text style={styles.bottomBarText}>Profile</Text>
+        </TouchableOpacity>
+      </View>
     </View>
   );
 };
@@ -188,6 +216,57 @@ const styles = StyleSheet.create({
   tailorTasteText: {
     textAlign: 'center',
     color: 'red',
+  },
+  header: {
+    position: 'absolute',
+    top: 50,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingVertical: 10,
+
+    opacity: 1,
+    zIndex: 1,
+  },
+  headerText: {
+    color: 'white',
+    fontSize: 18,
+  },
+  headerTextActive: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+  bottomBar: {
+    position: 'absolute',
+    bottom: 0,
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingBottom: 40,
+    backgroundColor: 'black',
+    zIndex: 1,
+  },
+  bottomBarButton: {
+    alignItems: 'center',
+  },
+  bottomBarButtonActive: {
+    alignItems: 'center',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    paddingLeft: 20,
+    paddingRight: 20,
+    paddingTop: 2.5,
+    paddingBottom: 2.5,
+  },
+  bottomBarText: {
+    color: 'white',
+    fontSize: 14,
+  },
+  bottomBarTextActive: {
+    color: 'black',
+    fontSize: 25,
+    fontWeight: 'bold',
   },
 });
 
