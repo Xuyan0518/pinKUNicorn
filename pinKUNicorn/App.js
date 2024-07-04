@@ -20,14 +20,14 @@ import {
   faPlus,
   faEnvelope,
   faUser,
-  faShop,
   faShoppingBag,
-  faShoppingCart,
 } from "@fortawesome/free-solid-svg-icons";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import getChatGPTResponse from "./ChatGPTService"; 
+import RecommendationsPage from "./components/RecommendationsPage"; // Import RecommendationsPage
+import getChatGPTResponse from "./ChatGPTService"; // Import ChatGPTService
 import fetchProducts from "./FakeShop";
+
 
 const { height, width } = Dimensions.get("window");
 
@@ -101,7 +101,7 @@ const VideoItem = ({ source, isActive }) => {
   );
 };
 
-const TailorTastePage = () => {
+const TailorTastePage = ({ navigation }) => {
   const [answers, setAnswers] = useState(
     questions.map((question) => ({ question, answer: "" }))
   );
@@ -175,6 +175,7 @@ const TailorTastePage = () => {
   
       const chatGPTResponse = await getChatGPTResponse(combinedPrompt);
       setResponse(chatGPTResponse);
+      navigation.navigate("Recommendations", { response: chatGPTResponse });
     } catch (error) {
       console.error("Error:", error);
       setResponse("An error occurred while fetching the response.");
@@ -332,6 +333,7 @@ const App = () => {
           options={{ headerShown: false }}
         />
         <Stack.Screen name="TailorTaste" component={TailorTastePage} />
+        <Stack.Screen name="Recommendations" component={RecommendationsPage} />
       </Stack.Navigator>
     </NavigationContainer>
   );
