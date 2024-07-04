@@ -168,7 +168,7 @@ const TailorTastePage = () => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
+    <ScrollView contentContainerStyle={styles.scrollContainer}>
       <Text style={styles.title}>Tailor Your Taste Page</Text>
       {answers.map((item, index) => (
         <View key={index} style={styles.questionContainer}>
@@ -437,6 +437,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
+  },
+  scrollContainer: {
+    padding: 20,
+    alignItems: "center",
   },
   title: {
     fontSize: 24,
