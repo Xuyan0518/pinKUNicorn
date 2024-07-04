@@ -112,7 +112,6 @@ const TailorTastePage = ({ navigation }) => {
     newAnswers[index] = { ...newAnswers[index], answer: text };
     setAnswers(newAnswers);
   };
-
   const handleSubmit = async () => {
     const {
       interest,
@@ -166,21 +165,28 @@ const TailorTastePage = ({ navigation }) => {
         title: product.title,
         price: product.price,
         category: product.category,
-        description: product.description
+        description: product.description,
+        stock: product.count,
+        rating: product.rating
       }));
-
+  
       const productsString = JSON.stringify(productsList);
-
-     const combinedPrompt = `${prompt} ${productsString}`;
+      const combinedPrompt = `${prompt} ${productsString}`;
   
       const chatGPTResponse = await getChatGPTResponse(combinedPrompt);
-      setResponse(chatGPTResponse);
-      navigation.navigate("Recommendations", { response: chatGPTResponse });
+  
+      const recommendedProducts = products.filter(product =>
+        chatGPTResponse.includes(product.title)
+      );
+  
+      navigation.navigate("Recommendations", { recommendations: recommendedProducts });
     } catch (error) {
       console.error("Error:", error);
       setResponse("An error occurred while fetching the response.");
     }
   };
+  
+  
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>

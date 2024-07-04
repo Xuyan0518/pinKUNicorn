@@ -1,42 +1,21 @@
 import React from "react";
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from "react-native";
+import ShowMoreText from "./ShowMoreText";
 
-const recommendedProducts = [
-  {
-    id: 1,
-    name: "Cool motorcycle AirPods",
-    price: "S$5.96",
-    originalPrice: "S$6.80",
-    discount: "12%",
-    rating: 4.8,
-    sold: 30,
-    image: require("../resources/product1.jpg"),
-  },
-  {
-    id: 2,
-    name: "2023 Wireless Lavalier Microphone",
-    price: "S$4.99",
-    originalPrice: "S$10.94",
-    discount: "54%",
-    rating: 4.7,
-    sold: 95,
-    image: require("../resources/product2.jpg"),
-  },
-  // Add more products here...
-];
+const RecommendationsPage = ({ route }) => {
+  const { recommendations } = route.params;
 
-const RecommendationsPage = ({ navigation }) => {
   const renderProduct = ({ item }) => (
     <View style={styles.productItem}>
-      <Image source={item.image} style={styles.productImage} />
+      <Image source={{ uri: item.image }} style={styles.productImage} />
       <View style={styles.productDetails}>
-        <Text style={styles.productName}>{item.name}</Text>
-        <Text style={styles.productPrice}>{item.price}</Text>
-        <Text style={styles.productOriginalPrice}>{item.originalPrice}</Text>
-        <Text style={styles.productDiscount}>{item.discount} off</Text>
-        <Text style={styles.productRating}>⭐ {item.rating} • {item.sold} sold</Text>
+        <Text style={styles.productName}>{item.title}</Text>
+        <Text style={styles.productPrice}>${item.price}</Text>
+        <Text style={styles.productCategory}>{item.category}</Text>
+        <ShowMoreText text={item.description} />
+        <Text style={styles.productRating}>Rating: {item.rating.rate} ({item.rating.count} reviews)</Text>
         <TouchableOpacity style={styles.buyButton}>
-          <Text style={styles.buyButtonText}>Buy</Text>
+          <Text style={styles.buyButtonText}>Add to cart</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -46,7 +25,7 @@ const RecommendationsPage = ({ navigation }) => {
     <View style={styles.container}>
       <Text style={styles.title}>Recommended Products</Text>
       <FlatList
-        data={recommendedProducts}
+        data={recommendations}
         renderItem={renderProduct}
         keyExtractor={(item) => item.id.toString()}
       />
@@ -89,12 +68,12 @@ const styles = StyleSheet.create({
     color: "red",
     fontSize: 16,
   },
-  productOriginalPrice: {
-    textDecorationLine: "line-through",
-    color: "#555",
-  },
-  productDiscount: {
+  productCategory: {
     color: "green",
+  },
+  productStock: {
+    marginTop: 5,
+    color: "blue",
   },
   productRating: {
     marginTop: 5,
