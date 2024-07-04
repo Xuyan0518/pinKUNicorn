@@ -157,7 +157,7 @@ const TailorTastePage = ({ navigation }) => {
       {}
     );
   
-    const prompt = `You are helping a customer find a product. The customer's interests are in ${interest}. They are willing to pay ${priceRange}. They prefer something ${trendiness}. They are looking for a style that is ${style}. They are purchasing for ${recipient}, who lives in ${recipientAddress}. They can wait ${deliveryTime} for delivery. Additional notes: ${anyInput}.`;
+    const prompt = `You are helping a customer find a product. The customer's interests are in ${interest}. They are willing to pay ${priceRange}. They prefer something ${trendiness}. They are looking for a style that is ${style}. They are purchasing for ${recipient}, who lives in ${recipientAddress}. They can wait ${deliveryTime} for delivery. Additional notes: ${anyInput}. Recommend the customer 5 products from the products here: \n`;
   
     try {
       const products = await fetchProducts();
