@@ -24,8 +24,10 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import getChatGPTResponse from "./ChatGPTService"; // Import ChatGPTService
 import RecommendationsPage from "./components/RecommendationsPage"; // Import RecommendationsPage
+import getChatGPTResponse from "./ChatGPTService"; // Import ChatGPTService
+import fetchProducts from "./FakeShop";
+
 
 const { height, width } = Dimensions.get("window");
 
@@ -155,10 +157,23 @@ const TailorTastePage = ({ navigation }) => {
       },
       {}
     );
+  
     const prompt = `You are helping a customer find a product. The customer's interests are in ${interest}. They are willing to pay ${priceRange}. They prefer something ${trendiness}. They are looking for a style that is ${style}. They are purchasing for ${recipient}, who lives in ${recipientAddress}. They can wait ${deliveryTime} for delivery. Additional notes: ${anyInput}.`;
-
+  
     try {
-      const chatGPTResponse = await getChatGPTResponse(prompt);
+      const products = await fetchProducts();
+      const productsList = products.map(product => ({
+        title: product.title,
+        price: product.price,
+        category: product.category,
+        description: product.description
+      }));
+
+      const productsString = JSON.stringify(productsList);
+
+     const combinedPrompt = `${prompt} ${productsString}`;
+  
+      const chatGPTResponse = await getChatGPTResponse(combinedPrompt);
       setResponse(chatGPTResponse);
       navigation.navigate("Recommendations", { response: chatGPTResponse });
     } catch (error) {
