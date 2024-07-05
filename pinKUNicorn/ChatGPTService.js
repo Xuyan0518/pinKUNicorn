@@ -13,7 +13,7 @@ const getChatGPTResponse = async (userInput) => {
           { role: 'system', content: 'You are a helpful assistant.' }, // Optional system message
           { role: 'user', content: userInput }
         ],
-        max_tokens: 150,
+        max_tokens: 1000,
         temperature: 0.7,
       },
       {
@@ -23,8 +23,9 @@ const getChatGPTResponse = async (userInput) => {
         },
       }
     );
-    console.log(response.data.choices[0].message.content.trim());
-    return response.data.choices[0].message.content.trim();
+    const result = response.data.choices[0].message.content.trim().split(', ');
+    //console.log(`GPT Result: ${result}`);
+    return result;
   } catch (error) {
     console.error('Error fetching data from OpenAI:', error);
     throw new Error('Failed to fetch response from ChatGPT');
