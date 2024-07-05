@@ -157,29 +157,31 @@ const TailorTastePage = ({ navigation }) => {
       {}
     );
   
-    const prompt = `You are helping a customer find a product. The customer's interests are in ${interest}. They are willing to pay ${priceRange}. They prefer something ${trendiness}. They are looking for a style that is ${style}. They are purchasing for ${recipient}, who lives in ${recipientAddress}. They can wait ${deliveryTime} for delivery. Additional notes: ${anyInput}. Recommend the customer 5 products from the products here: \n`;
+    const prompt = `You are helping a customer find a product. The customer's interests are in ${interest}. They are willing to pay ${priceRange}. They prefer something ${trendiness}. They are looking for a style that is ${style}. They are purchasing for ${recipient}, who lives in ${recipientAddress}. They can wait ${deliveryTime} for delivery. Additional notes: ${anyInput}. Recommend the customer 5 products from the products here by only listing out only the ids of the products, nothing else to be listed!!!!: \n`;
   
     try {
       const products = await fetchProducts();
       const productsList = products.map(product => ({
+        id: product.id,
         title: product.title,
         price: product.price,
         category: product.category,
         description: product.description,
         stock: product.count,
-        rating: product.rating
+        rating: product.rating,
+        image: product.image
       }));
   
       const productsString = JSON.stringify(productsList);
       const combinedPrompt = `${prompt} ${productsString}`;
-  
       const chatGPTResponse = await getChatGPTResponse(combinedPrompt);
-  
-      const recommendedProducts = products.filter(product =>
-        chatGPTResponse.includes(product.title)
+      //console.log(`GPT result: ${chatGPTResponse}`);
+      const recommendedProductList = productsList.filter(item => 
+        chatGPTResponse.includes(item.id.toString())
       );
-  
-      navigation.navigate("Recommendations", { recommendations: recommendedProducts });
+      //console.log(`recommended products: ${recommendedProductList.map(product => product.id)}`);
+      //const recommendedProducts = productsList.filter(product => product.title == recommendedProductList.title);
+      navigation.navigate("Recommendations", { recommendations: recommendedProductList });
     } catch (error) {
       console.error("Error:", error);
       setResponse("An error occurred while fetching the response.");
