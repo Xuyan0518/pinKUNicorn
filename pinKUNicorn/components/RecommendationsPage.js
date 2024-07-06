@@ -13,7 +13,7 @@ const RecommendationsPage = ({ route }) => {
         <Text style={styles.productPrice}>${item.price}</Text>
         <Text style={styles.productCategory}>{item.category}</Text>
         <ShowMoreText text={item.description} />
-        <Text style={styles.productRating}>Rating: {item.rating.rate} ({item.rating.count} reviews)</Text>
+        {/* <Text style={styles.productRating}>Rating: {item.rating.rate} ({item.rating.count} reviews)</Text> */}
         <TouchableOpacity style={styles.buyButton}>
           <Text style={styles.buyButtonText}>Add to cart</Text>
         </TouchableOpacity>
