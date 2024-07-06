@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_KEY = 'api'; // Replace with your actual API key
+const API_KEY = 'sk-proj-03TffNfVIDrwhSqbQW7dT3BlbkFJoOHsRHjdfYsxSc4rtTo5'; // Replace with your actual API key
 const API_URL = 'https://api.openai.com/v1/chat/completions';
 
 const getChatGPTResponse = async (userInput) => {

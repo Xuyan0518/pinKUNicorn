@@ -160,6 +160,7 @@ const TailorTastePage = ({ navigation }) => {
     const prompt = `You are helping a customer find a product. The customer's interests are in ${interest}. They are willing to pay ${priceRange}. They prefer something ${trendiness}. They are looking for a style that is ${style}. They are purchasing for ${recipient}, who lives in ${recipientAddress}. They can wait ${deliveryTime} for delivery. Additional notes: ${anyInput}. Recommend the customer 5 products from the products here by only listing out only the ids of the products, nothing else to be listed!!!!: \n`;
   
     try {
+      // await addProduct();
       const products = await fetchProducts();
       const productsList = products.map(product => ({
         id: product.id,
@@ -167,19 +168,20 @@ const TailorTastePage = ({ navigation }) => {
         price: product.price,
         category: product.category,
         description: product.description,
-        stock: product.count,
-        rating: product.rating,
+        // stock: product.count,
+        // rating: product.rating,
         image: product.image
       }));
-  
+      // console.log(`ProductsList: ${productsList.map(item => item.id)}`);
+
       const productsString = JSON.stringify(productsList);
       const combinedPrompt = `${prompt} ${productsString}`;
       const chatGPTResponse = await getChatGPTResponse(combinedPrompt);
-      //console.log(`GPT result: ${chatGPTResponse}`);
+      console.log(`GPT result: ${chatGPTResponse}`);
       const recommendedProductList = productsList.filter(item => 
         chatGPTResponse.includes(item.id.toString())
       );
-      //console.log(`recommended products: ${recommendedProductList.map(product => product.id)}`);
+      console.log(`recommended products: ${recommendedProductList.map(product => product.id)}`);
       //const recommendedProducts = productsList.filter(product => product.title == recommendedProductList.title);
       navigation.navigate("Recommendations", { recommendations: recommendedProductList });
     } catch (error) {
