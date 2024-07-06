@@ -27,6 +27,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import RecommendationsPage from "./components/RecommendationsPage"; // Import RecommendationsPage
 import getChatGPTResponse from "./ChatGPTService"; // Import ChatGPTService
 import fetchProducts from "./FakeShop";
+import { SafeAreaView } from "react-native";
 
 
 const { height, width } = Dimensions.get("window");
@@ -64,14 +65,13 @@ const products = [
 ];
 
 const questions = [
-  "What is your area of interest?",
-  "What is price range you are willing to pay?",
-  "Do you prefer some more trendy or more unique?",
-  "What style are you looking for?",
-  "Who are you purchasing for?",
-  "Which city is the recipient living in?",
-  "How long can you wait for delivery?",
-  "You can key in anything here (for example: I am buying it for my mother on Mother's Day)",
+  "Describe Your Recipient",
+  "Describe Your Product",
+  "Price Range",
+  "Trendiness",
+  "Style",
+  "Delivery Location",
+  "Delivery Before"
 ];
 
 const VideoItem = ({ source, isActive }) => {
@@ -105,49 +105,61 @@ const TailorTastePage = ({ navigation }) => {
   const [answers, setAnswers] = useState(
     questions.map((question) => ({ question, answer: "" }))
   );
-  const [response, setResponse] = useState("");
+  const [initialQuestionAnswered, setInitialQuestionAnswered] = useState(false);
+  const [response, setResponse] = useState("")
+  const [showAllQuestions, setShowAllQuestions] = useState(false);
 
   const handleInputChange = (text, index) => {
     const newAnswers = [...answers];
     newAnswers[index] = { ...newAnswers[index], answer: text };
     setAnswers(newAnswers);
   };
+
+  useEffect(() => {
+    const areInitialQuestionsAnswered = answers[0].answer.trim() !== "" && answers[1].answer.trim() !== "";
+    setInitialQuestionAnswered(areInitialQuestionsAnswered);
+  }, [answers]);
+
   const handleSubmit = async () => {
+    const allQuestionAnswered = answers.every(item => item.answer.trim() !== "");
+
+    if (allQuestionAnswered) {
+      console.log("all answered")
+    } else {
+      console.log("Please answer all questions")
+    }
+
     const {
-      interest,
       priceRange,
       trendiness,
       style,
       recipient,
       recipientAddress,
       deliveryTime,
-      anyInput,
+      product,
     } = answers.reduce(
       (acc, { question, answer }) => {
         switch (question) {
-          case "What is your area of interest?":
-            acc.interest = answer;
-            break;
-          case "What is price range you are willing to pay?":
+          case "Price Range":
             acc.priceRange = answer;
             break;
-          case "Do you prefer some more trendy or more unique?":
+          case "Trendiness":
             acc.trendiness = answer;
             break;
-          case "What style are you looking for?":
-            acc.style = answer;
-            break;
-          case "Who are you purchasing for?":
+          case "Describe Your Recipient":
             acc.recipient = answer;
             break;
-          case "Which city is the recipient living in?":
+          case "Delivery Location":
             acc.recipientAddress = answer;
             break;
-          case "How long can you wait for delivery?":
+          case "Style":
+            acc.style = answer;
+            break;
+          case "Delivery Before":
             acc.deliveryTime = answer;
             break;
-          case "You can key in anything here (for example: I am buying it for my mother on Mother's Day)":
-            acc.anyInput = answer;
+          case "Describe Your Product":
+            acc.product = answer;
             break;
           default:
             break;
@@ -157,7 +169,7 @@ const TailorTastePage = ({ navigation }) => {
       {}
     );
   
-    const prompt = `You are helping a customer find a product. The customer's interests are in ${interest}. They are willing to pay ${priceRange}. They prefer something ${trendiness}. They are looking for a style that is ${style}. They are purchasing for ${recipient}, who lives in ${recipientAddress}. They can wait ${deliveryTime} for delivery. Additional notes: ${anyInput}. Recommend the customer 5 products from the products here by only listing out only the ids of the products, nothing else to be listed!!!!: \n`;
+    const prompt = `You are helping a customer find a product. The customer is willing to pay ${priceRange}. They prefer something ${trendiness}. They are looking for a style that is ${style}. They are purchasing for ${recipient}, who lives in ${recipientAddress}. They can wait ${deliveryTime} for delivery. Additional notes: ${product}. Recommend the customer 5 products from the products here by only listing out only the ids of the products, nothing else to be listed!!!!: \n`;
   
     try {
       const products = await fetchProducts();
@@ -187,34 +199,78 @@ const TailorTastePage = ({ navigation }) => {
       setResponse("An error occurred while fetching the response.");
     }
   };
+
+  const toggleShowAllQuestions = () => {
+    setShowAllQuestions(!showAllQuestions);
+  }
   
   
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <Text style={styles.title}>Tailor Your Taste Page</Text>
-      {answers.map((item, index) => (
-        <View key={index} style={styles.questionContainer}>
-          <Text style={styles.questionText}>{item.question}</Text>
-          <TextInput
-            style={styles.input}
-            placeholder={`Answer ${index + 1}`}
-            value={item.answer}
-            onChangeText={(text) => handleInputChange(text, index)}
-          />
-        </View>
-      ))}
-      <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-        <Text style={styles.submitButtonText}>Submit</Text>
-      </TouchableOpacity>
-      {response ? (
-        <View style={styles.responseContainer}>
-          <Text style={styles.responseText}>{response}</Text>
-        </View>
-      ) : null}
+      <SafeAreaView>
+        <Text style={styles.title}>Tailor Your Taste Page</Text>
+        {answers.slice(0, 2).map((item, index) => (
+          <View key={index} style={styles.questionContainer}>
+            <Text style={styles.questionText}>{item.question}</Text>
+            <TextInput
+              style={styles.input}
+              placeholder={`Answer ${index + 1}`}
+              value={item.answer}
+              onChangeText={(text) => handleInputChange(text, index)}
+            />
+          </View>
+        ))}
+        {!showAllQuestions ? (
+          <TouchableOpacity onPress={toggleShowAllQuestions} style={styles.option}>
+            <Text style={styles.optionText}>More options</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity onPress={toggleShowAllQuestions} style={styles.option}>
+            <Text style={styles.optionText}>Fold options</Text>
+          </TouchableOpacity>
+        )}
+        {showAllQuestions && (
+          <>
+            {answers.slice(2).map((item, index) => (
+              <View key={index + 2} style={styles.questionContainer}>
+                <Text style={styles.questionText}>{item.question}</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder={`Answer ${index + 3}`}
+                  value={item.answer}
+                  onChangeText={(text) => handleInputChange(text, index + 2)}
+                />
+              </View>
+            ))}
+          </>
+        )}
+        {!initialQuestionAnswered && (
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+            <Text style={styles.submitButtonText}>Submit Anyway</Text>
+          </TouchableOpacity>
+        )}
+        {response ? (
+          <View style={styles.responseContainer}>
+            <Text style={styles.responseText}>{response}</Text>
+          </View>
+        ) : null}
+
+        {initialQuestionAnswered && (
+          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+            <Text style={styles.submitButtonText}>Submit</Text>
+          </TouchableOpacity>
+        )}
+        {response ? (
+          <View style={styles.responseContainer}>
+            <Text style={styles.responseText}>{response}</Text>
+          </View>
+        ) : null}
+      </SafeAreaView>
     </ScrollView>
   );
 };
+
 
 
 const ProductPage = ({ navigation }) => {
@@ -333,14 +389,14 @@ const Stack = createStackNavigator();
 
 const App = () => {
   return (
-    <NavigationContainer>
+    <NavigationContainer style={styles.app}>
       <Stack.Navigator initialRouteName="Main">
         <Stack.Screen
           name="Main"
           component={MainScreen}
           options={{ headerShown: false }}
         />
-        <Stack.Screen name="TailorTaste" component={TailorTastePage} />
+        <Stack.Screen name="TailorTaste" component={TailorTastePage} options={{ headerShown: false }}/>
         <Stack.Screen name="Recommendations" component={RecommendationsPage} />
       </Stack.Navigator>
     </NavigationContainer>
@@ -350,7 +406,6 @@ const App = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "white" 
   },
   viewPager: {
     flex: 1,
@@ -361,21 +416,23 @@ const styles = StyleSheet.create({
   },
   videoContainer: {
     flex: 1,
-    backgroundColor: "black",
+    backgroundColor: "#black"
   },
   video: {
     flex: 1,
   },
   productPage: {
     flex: 1,
-    backgroundColor: "white",
+    backgroundColor: "#black",
     padding: 20,
     paddingTop: 80, // Increase this value to add more padding at the top
   },
   productPageTitle: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: "bold",
     marginBottom: 40,
+    marginTop: 20,
+    color: "#FFFFFF"
   },
   productGrid: {
     flexDirection: "row",
@@ -465,11 +522,14 @@ const styles = StyleSheet.create({
   scrollContainer: {
     padding: 20,
     alignItems: "center",
+    backgroundColor: "white"
   },
   title: {
-    fontSize: 24,
+    fontSize: 32,
     fontWeight: "bold",
-    marginBottom: 10,
+    marginTop: 10,
+    marginBottom: 15,
+    fontFamily: "Inter-Bold"
   },
   questionContainer: {
     width: "100%",
@@ -479,18 +539,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginBottom: 5,
     color: "black",
+    fontFamily: "Inter-Semibold"
   },
   input: {
     borderWidth: 1,
     borderColor: "gray",
-    borderRadius: 5,
+    borderRadius: 10,
     padding: 10,
-    width: "100%",
+    width: 400,
     backgroundColor: "white",
   },
   submitButton: {
     marginTop: 20,
-    backgroundColor: "red",
+    backgroundColor: "#E94359",
     borderRadius: 5,
     padding: 10,
   },
@@ -506,6 +567,17 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "center",
   },
+  option: {
+    padding: 8,
+    alignSelf: "center",
+    borderColor: 'black',
+    borderWidth: 1,
+    borderRadius: 10,
+  },
+  optionText: {
+    fontFamily: "Inter-Regular",
+    fontSize: 14
+  }
 });
 
 export default App;
