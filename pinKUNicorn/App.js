@@ -283,7 +283,7 @@ const ProductPage = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.productPage}>
+    <SafeAreaView style={styles.productPage}>
       <Text style={styles.productPageTitle}>Trending of Today</Text>
       <View style={styles.productGrid}>
         {products.map((product) => (
@@ -302,7 +302,7 @@ const ProductPage = ({ navigation }) => {
         </Text>
         <Text style={styles.tailorTasteText}>Tailor your taste!</Text>
       </TouchableOpacity>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -416,58 +416,58 @@ const styles = StyleSheet.create({
   },
   videoContainer: {
     flex: 1,
-    backgroundColor: "#black"
+    backgroundColor: "black"
   },
   video: {
     flex: 1,
   },
   productPage: {
     flex: 1,
-    backgroundColor: "#black",
-    padding: 20,
-    paddingTop: 80, // Increase this value to add more padding at the top
+    backgroundColor: "black"
   },
   productPageTitle: {
     fontSize: 32,
     fontWeight: "bold",
-    marginBottom: 40,
     marginTop: 20,
-    color: "#FFFFFF"
+    color: "#FFFFFF",
+    padding: 20,
   },
   productGrid: {
+    padding: 20,
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "space-between",
-    marginHorizontal: 10, // Add some horizontal margin if needed
   },
   productItem: {
-    width: "48%", // You can increase this to make the items wider
-    aspectRatio: 0.7, // Keep this if you want square items
-    marginBottom: 25, // Increase bottom margin for more space between rows
-    borderWidth: 1,
-    borderColor: "red",
+    width: "49%",
+    aspectRatio: 0.7,
     borderRadius: 10,
+    marginBottom: 10,
     overflow: "hidden",
     padding: 5,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "white",
+    backgroundColor: "#FFFFFF",
   },
   productImage: {
     width: "100%",
     height: "100%",
-    resizeMode: "contain", // or 'cover' if you want to fill the entire space
+    borderRadius: 10,
+    resizeMode: "cover",
   },
   tailorTaste: {
-    marginTop: 20,
-    borderWidth: 1,
-    borderColor: "red",
     borderRadius: 10,
     padding: 10,
+    marginLeft: 20,
+    marginRight: 20,
+    backgroundColor: "#FE2D55",
   },
   tailorTasteText: {
     textAlign: "center",
-    color: "red",
+    color: "#FFFFFF",
+    fontFamily: "Inter-Extrabold",
+    lineHeight: 22,
+    fontSize: 17,
   },
   header: {
     position: "absolute",
@@ -487,6 +487,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
+    textDecorationLine: "underline"
   },
   bottomBar: {
     position: "absolute",
@@ -500,6 +501,7 @@ const styles = StyleSheet.create({
   bottomBarButton: {
     justifyContent: "center",
     alignItems: "center",
+    
   },
   bottomBarButtonActive: {
     justifyContent: "center",
@@ -514,7 +516,6 @@ const styles = StyleSheet.create({
     fontSize: 10,
   },
   tailorTastePage: {
-    flex: 1,
     justifyContent: "center",
     alignItems: "center",
     padding: 20,
@@ -522,7 +523,8 @@ const styles = StyleSheet.create({
   scrollContainer: {
     padding: 20,
     alignItems: "center",
-    backgroundColor: "white"
+    backgroundColor: "white",
+    flex: 1,
   },
   title: {
     fontSize: 32,
