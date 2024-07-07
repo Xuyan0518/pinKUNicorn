@@ -278,6 +278,7 @@ const TailorTastePage = ({ navigation }) => {
                   <TextInput
                     style={styles.input}
                     placeholder={`Enter ${item.question}`}
+                    placeholderTextColor={"#878789"}
                     value={item.answer}
                     onChangeText={(text) =>
                       handleInputChange(text, index + 2)
@@ -596,10 +597,11 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "gray",
+    borderColor: "#E3E3E4",
     borderRadius: 10,
-    padding: 10,
     width: 400,
+    padding: 15,
+    fontSize: 15,
   },
   submitButton: {
     marginTop: 10,
@@ -629,7 +631,19 @@ const styles = StyleSheet.create({
     fontFamily: "Inter-Regular",
     fontSize: 16,
     textDecorationLine: "underline"
-  }
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 15,
+    borderColor: "#E3E3E4"
+  },
+  dateButtonText: {
+    color: "#878789",
+    fontSize: 15,
+    fontFamily: "Inter-Regular",
+  },
+
 });
 
 export default App;
