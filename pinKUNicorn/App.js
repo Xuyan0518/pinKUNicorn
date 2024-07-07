@@ -140,24 +140,36 @@ const TailorTastePage = ({ navigation }) => {
     }
 
     const {
-      recipient,
-      product,
-      recipientAddress,
-      deliveryTime,
+      recipientDescription = "",
+      productDescription= "",
+      priceRange = "",
+      trendiness = "",
+      style = "",
+      deliveryLocation = "",
+      deliveryDuration = "",
     } = answers.reduce(
       (acc, { question, answer }) => {
         switch (question) {
           case "Describe Your Recipient":
-            acc.recipient = answer;
+            acc.recipientDescription = answer;
             break;
           case "Describe Your Product":
-            acc.product = answer;
+            acc.productDescription = answer;
+            break;
+          case "Price Range":
+            acc.priceRange = answer;
+            break;
+          case "Trendiness":
+            acc.trendiness = answer;
+            break;
+          case "Style":
+            acc.style = answer;
             break;
           case "Delivery Location":
-            acc.recipientAddress = answer;
+            acc.deliveryLocation = answer;
             break;
           case "Delivery Before":
-            acc.deliveryTime = answer;
+            acc.deliveryDuration = answer;
             break;
           default:
             break;
@@ -166,9 +178,17 @@ const TailorTastePage = ({ navigation }) => {
       },
       {}
     );
-
-    const prompt = `You are helping a customer find a product. The customer is willing to pay ${priceRange}. They prefer something ${trendiness}. They are looking for a style that is ${style}. They are purchasing for ${recipient}, who lives in ${recipientAddress}. They can wait ${deliveryTime} for delivery. Additional notes: ${product}. Recommend the customer 5 products from the products here by only listing out only the ids of the products, nothing else to be listed!!!!: \n`;
-
+    
+    const defaultRecipientDescription = "no specific recipient description provided";
+    const defaultProductDescription = "no specific product description provided";
+    const defaultStyle = "no specific style";
+    const defaultTrendiness = "no specific trendiness";
+    const defaultPriceRange = "no specific price range";
+    const defaultDeliveryLocation = "no specific location";
+    const defaultDeliveryDuration = "no specific delivery time";
+    
+    const prompt = `You are helping a customer find a product. Here is the description of the recipient: ${recipientDescription || defaultRecipientDescription}.\n Here is the description of the product the customer desires: ${productDescription || defaultProductDescription}.\n They are looking for products of style: ${style || defaultStyle}, and trendiness of: ${trendiness || defaultTrendiness}.\n The price range of the product is: ${priceRange || defaultPriceRange}.\n The delivery location is: ${deliveryLocation || defaultDeliveryLocation}, and prefers the products to be delivered by: ${deliveryDuration || defaultDeliveryDuration}.\n Based on the above information, recommend the customer 5 products from the products here by only listing out only the ids of the products, nothing else to be listed!!!!: \n`;
+    
     try {
       const products = await fetchProducts();
       const productsList = products.map(product => ({
@@ -182,6 +202,7 @@ const TailorTastePage = ({ navigation }) => {
 
       const productsString = JSON.stringify(productsList);
       const combinedPrompt = `${prompt} ${productsString}`;
+      console.log(combinedPrompt);
       const chatGPTResponse = await getChatGPTResponse(combinedPrompt);
       console.log(`GPT result: ${chatGPTResponse}`);
       const recommendedProductList = productsList.filter(item => 
