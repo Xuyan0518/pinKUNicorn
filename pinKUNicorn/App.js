@@ -220,7 +220,7 @@ const TailorTastePage = ({ navigation }) => {
       style={styles.keyboardAvoidingView}
       keyboardVerticalOffset={100}
     >
-      <SafeAreaView contentContainerStyle={styles.safeareaScrollContainer}>
+      <SafeAreaView style={styles.safeareaScrollContainer}>
           <View style={styles.headerButtons}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
               <Text style={styles.buttonText}>&lt;Back</Text>
@@ -229,14 +229,15 @@ const TailorTastePage = ({ navigation }) => {
               <Text style={styles.buttonText}>Shop more&gt;</Text>
             </TouchableOpacity>
           </View>
-          <ScrollView style={styles.scrollContainer}>
-          <Text style={styles.title}>Tailor Your Taste Page</Text>
+          <ScrollView contentContainerStyle={styles.scrollContainer}>
+          <Text style={styles.title}>Tailor Your Taste</Text>
           {answers.slice(0, 2).map((item, index) => (
             <View key={index} style={styles.questionContainer}>
               <Text style={styles.questionText}>{item.question}</Text>
               <TextInput
                 style={styles.descriptionInput}
                 placeholder={`Description`}
+                placeholderTextColor={"#878789"}
                 value={item.answer}
                 onChangeText={(text) => handleInputChange(text, index)}
               />
@@ -366,6 +367,7 @@ const TailorTastePage = ({ navigation }) => {
                       <TextInput
                         style={styles.input}
                         placeholder={`Enter ${item.question}`}
+                        placeholderTextColor={"#878789"}
                         value={item.answer}
                         onChangeText={(text) => handleInputChange(text, index + 2)}
                       />
@@ -663,7 +665,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   scrollContainer: {
-    padding: 20
+    padding: 15,
   },
   title: {
     fontSize: 32,
@@ -693,7 +695,7 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "#E3E3E4",
+    borderColor: "#B0B0B0",
     borderRadius: 10,
     width: 400,
     padding: 15,
@@ -738,14 +740,14 @@ const styles = StyleSheet.create({
   },
   priceContainer: {
     borderWidth: 1,
-    borderColor: "gray",
+    borderColor: "#B0B0B0",
     borderRadius: 10,
-    padding: 10,
-    width: '100%',
-    textAlign: 'center',
+    width: 400,
+    padding: 15,
+    fontSize: 15,
   },
   priceText: {
-    color: "black",
+    color: '#878789'
   },
   modalContainer: {
     flex: 1,
@@ -777,13 +779,13 @@ const styles = StyleSheet.create({
     color: "white",
     textAlign: "center",
     fontSize: 16,
-        textDecorationLine: "underline"
+    textDecorationLine: "underline"
   },
   dateButton: {
     borderWidth: 1,
     borderRadius: 10,
     padding: 15,
-    borderColor: "#E3E3E4"
+    borderColor: "#B0B0B0",
   },
   dateButtonText: {
     color: "#878789",
@@ -796,10 +798,12 @@ const styles = StyleSheet.create({
   radioGroup: {
     flexDirection: 'row',
     justifyContent: 'space-around',
+    marginBottom: 20,
   },
   radioButton: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginTop: 10,
   },
   radioSelected: {
     width: 20,
@@ -818,41 +822,25 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   radioButtonText: {
+
     marginLeft: 5,
-  },
-  dateButton: {
-    borderWidth: 1,
-    borderColor: "gray",
-    borderRadius: 10,
-    padding: 10,
-    width: '100%',
-    textAlign: 'center',
-  },
-  dateButtonText: {
-    color: "black",
-  },
-  selectedDateButtonText: {
-    color: "green",
   },
   headerButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
     width: "100%",
     paddingHorizontal: 0,
-    backgroundColor: '#E94359',
   },
   backButton: {
-    backgroundColor: "#E94359",
     padding: 10,
     borderRadius: 5,
   },
   shopButton: {
-    backgroundColor: "#E94359",
     padding: 10,
     borderRadius: 5,
   },
   buttonText: {
-    color: "white",
+    color: "black",
     fontSize: 16,
   },
   shopImage: {
@@ -862,6 +850,7 @@ const styles = StyleSheet.create({
   },
   keyboardAvoidingView: {
     flex: 1,
+    justifyContent: "center"
   }
 });
 
