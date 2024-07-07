@@ -133,43 +133,31 @@ const TailorTastePage = ({ navigation }) => {
   const handleSubmit = async () => {
     const allQuestionAnswered = answers.every(item => item.answer.trim() !== "") && priceRange !== "" && trendiness !== "" && style !== "";
 
-    // if (allQuestionAnswered) {
-    //   console.log("all answered")
-    // } else {
-    //   console.log("Please answer all questions")
-    // }
+    if (allQuestionAnswered) {
+      console.log("all answered");
+    } else {
+      console.log("Please answer all questions");
+    }
 
     const {
-      recipientDescription = "",
-      productDescription= "",
-      priceRange = "",
-      trendiness = "",
-      style = "",
-      deliveryLocation = "",
-      deliveryDuration = "",
+      recipient,
+      product,
+      recipientAddress,
+      deliveryTime,
     } = answers.reduce(
       (acc, { question, answer }) => {
         switch (question) {
           case "Describe Your Recipient":
-            acc.recipientDescription = answer;
+            acc.recipient = answer;
             break;
           case "Describe Your Product":
-            acc.productDescription = answer;
-            break;
-          case "Price Range":
-            acc.priceRange = answer;
-            break;
-          case "Trendiness":
-            acc.trendiness = answer;
-            break;
-          case "Style":
-            acc.style = answer;
+            acc.product = answer;
             break;
           case "Delivery Location":
-            acc.deliveryLocation = answer;
+            acc.recipientAddress = answer;
             break;
           case "Delivery Before":
-            acc.deliveryDuration = answer;
+            acc.deliveryTime = answer;
             break;
           default:
             break;
@@ -178,17 +166,9 @@ const TailorTastePage = ({ navigation }) => {
       },
       {}
     );
-    
-    const defaultRecipientDescription = "no specific recipient description provided";
-    const defaultProductDescription = "no specific product description provided";
-    const defaultStyle = "no specific style";
-    const defaultTrendiness = "no specific trendiness";
-    const defaultPriceRange = "no specific price range";
-    const defaultDeliveryLocation = "no specific location";
-    const defaultDeliveryDuration = "no specific delivery time";
-    
-    const prompt = `You are helping a customer find a product. Here is the description of the recipient: ${recipientDescription || defaultRecipientDescription}.\n Here is the description of the product the customer desires: ${productDescription || defaultProductDescription}.\n They are looking for products of style: ${style || defaultStyle}, and trendiness of: ${trendiness || defaultTrendiness}.\n The price range of the product is: ${priceRange || defaultPriceRange}.\n The delivery location is: ${deliveryLocation || defaultDeliveryLocation}, and preferred the products to be delivered by: ${deliveryDuration || defaultDeliveryDuration}.\n Based on the above information, recommend the customer 5 products from the products here by only listing out only the ids of the products, nothing else to be listed!!!!: \n`;
-    
+
+    const prompt = `You are helping a customer find a product. The customer is willing to pay ${priceRange}. They prefer something ${trendiness}. They are looking for a style that is ${style}. They are purchasing for ${recipient}, who lives in ${recipientAddress}. They can wait ${deliveryTime} for delivery. Additional notes: ${product}. Recommend the customer 5 products from the products here by only listing out only the ids of the products, nothing else to be listed!!!!: \n`;
+
     try {
       const products = await fetchProducts();
       const productsList = products.map(product => ({
@@ -202,7 +182,6 @@ const TailorTastePage = ({ navigation }) => {
 
       const productsString = JSON.stringify(productsList);
       const combinedPrompt = `${prompt} ${productsString}`;
-      console.log(combinedPrompt);
       const chatGPTResponse = await getChatGPTResponse(combinedPrompt);
       console.log(`GPT result: ${chatGPTResponse}`);
       const recommendedProductList = productsList.filter(item => 
@@ -243,6 +222,14 @@ const TailorTastePage = ({ navigation }) => {
     >
       <SafeAreaView contentContainerStyle={styles.scrollContainer}>
         <ScrollView>
+          <View style={styles.headerButtons}>
+            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+              <Text style={styles.buttonText}>&lt;Back</Text>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate("Shop")} style={styles.shopButton}>
+              <Text style={styles.buttonText}>Shop more&gt;</Text>
+            </TouchableOpacity>
+          </View>
           <Text style={styles.title}>Tailor Your Taste Page</Text>
           {answers.slice(0, 2).map((item, index) => (
             <View key={index} style={styles.questionContainer}>
@@ -415,6 +402,14 @@ const TailorTastePage = ({ navigation }) => {
   );
 };
 
+const ShopPage = () => {
+  return (
+    <SafeAreaView style={styles.container}>
+      <Image source={require("./resources/shop_demo.jpg")} style={styles.shopImage} />
+    </SafeAreaView>
+  );
+};
+
 const ProductPage = ({ navigation }) => {
   const handleProductPress = (url) => {
     Linking.openURL(url);
@@ -540,6 +535,7 @@ const App = () => {
         />
         <Stack.Screen name="TailorTaste" component={TailorTastePage} options={{ headerShown: false }}/>
         <Stack.Screen name="Recommendations" component={RecommendationsPage} />
+        <Stack.Screen name="Shop" component={ShopPage} />
       </Stack.Navigator>
     </NavigationContainer>
   );
@@ -702,12 +698,13 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   submitButton: {
-    marginTop: 20,
+    marginTop: 10,
     backgroundColor: "#E94359",
     borderRadius: 5,
     padding: 10,
     width: '80%',
     alignItems: 'center',
+    alignSelf: 'center',
   },
   submitButtonText: {
     color: "white",
@@ -835,6 +832,33 @@ const styles = StyleSheet.create({
   },
   selectedDateButtonText: {
     color: "green",
+  },
+  headerButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+    paddingHorizontal: 0,
+    marginBottom: 20,
+    backgroundColor: '#E94359',
+  },
+  backButton: {
+    backgroundColor: "#E94359",
+    padding: 10,
+    borderRadius: 5,
+  },
+  shopButton: {
+    backgroundColor: "#E94359",
+    padding: 10,
+    borderRadius: 5,
+  },
+  buttonText: {
+    color: "white",
+    fontSize: 16,
+  },
+  shopImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
 });
 
