@@ -209,8 +209,8 @@ const TailorTastePage = ({ navigation }) => {
   
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <SafeAreaView>
+    <SafeAreaView style={styles.scrollContainer}>
+      <ScrollView showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Tailor Your Taste Page</Text>
         {answers.slice(0, 2).map((item, index) => (
           <View key={index} style={styles.questionContainer}>
@@ -268,8 +268,8 @@ const TailorTastePage = ({ navigation }) => {
             <Text style={styles.responseText}>{response}</Text>
           </View>
         ) : null}
-      </SafeAreaView>
-    </ScrollView>
+      </ScrollView>
+    </SafeAreaView>
   );
 };
 
@@ -523,10 +523,10 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   scrollContainer: {
-    padding: 20,
     alignItems: "center",
     backgroundColor: "white",
     flex: 1,
+    
   },
   title: {
     fontSize: 32,
