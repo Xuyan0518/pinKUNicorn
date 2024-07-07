@@ -32,6 +32,7 @@ import RecommendationsPage from "./components/RecommendationsPage"; // Import Re
 import getChatGPTResponse from "./ChatGPTService"; // Import ChatGPTService
 import fetchProducts from "./FakeShop";
 import { Picker } from '@react-native-picker/picker';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 
 const { height, width } = Dimensions.get("window");
@@ -116,6 +117,8 @@ const TailorTastePage = ({ navigation }) => {
   const [trendiness, setTrendiness] = useState("");
   const [style, setStyle] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
 
   const handleInputChange = (text, index) => {
     const newAnswers = [...answers];
@@ -195,6 +198,21 @@ const TailorTastePage = ({ navigation }) => {
 
   const toggleShowAllQuestions = () => {
     setShowAllQuestions(!showAllQuestions);
+  };
+
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleConfirm = (date) => {
+    const formattedDate = date.toISOString().split("T")[0];
+    setSelectedDate(formattedDate);
+    handleInputChange(formattedDate, answers.findIndex(item => item.question === "Delivery Before"));
+    hideDatePicker();
   };
 
   return (
@@ -319,13 +337,32 @@ const TailorTastePage = ({ navigation }) => {
                       </TouchableOpacity>
                     </View>
                   )}
-                  {item.question !== "Price Range" && item.question !== "Trendiness" && item.question !== "Style" && (
-                    <TextInput
-                      style={styles.input}
-                      placeholder={`Enter ${item.question}`}
-                      value={item.answer}
-                      onChangeText={(text) => handleInputChange(text, index + 2)}
-                    />
+                  {item.question === "Delivery Before" ? (
+                    <>
+                      <TouchableOpacity
+                        onPress={showDatePicker}
+                        style={styles.dateButton}
+                      >
+                        <Text style={[styles.dateButtonText, selectedDate ? styles.selectedDateButtonText : {}]}>
+                          {selectedDate || "Select Delivery Date"}
+                        </Text>
+                      </TouchableOpacity>
+                      <DateTimePickerModal
+                        isVisible={isDatePickerVisible}
+                        mode="date"
+                        onConfirm={handleConfirm}
+                        onCancel={hideDatePicker}
+                      />
+                    </>
+                  ) : (
+                    item.question !== "Price Range" && item.question !== "Trendiness" && item.question !== "Style" && (
+                      <TextInput
+                        style={styles.input}
+                        placeholder={`Enter ${item.question}`}
+                        value={item.answer}
+                        onChangeText={(text) => handleInputChange(text, index + 2)}
+                      />
+                    )
                   )}
                 </View>
               ))}
@@ -341,7 +378,7 @@ const TailorTastePage = ({ navigation }) => {
               <Text style={styles.responseText}>{response}</Text>
             </View>
           ) : null}
-  
+
           {initialQuestionAnswered && (
             <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
               <Text style={styles.submitButtonText}>Submit</Text>
@@ -357,6 +394,8 @@ const TailorTastePage = ({ navigation }) => {
     </KeyboardAvoidingView>
   );
 };
+
+
 
 const ProductPage = ({ navigation }) => {
   const handleProductPress = (url) => {
@@ -748,7 +787,21 @@ const styles = StyleSheet.create({
   },
   radioButtonText: {
     marginLeft: 5,
-  }
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderColor: "gray",
+    borderRadius: 10,
+    padding: 10,
+    width: '100%',
+    textAlign: 'center',
+  },
+  dateButtonText: {
+    color: "black",
+  },
+  selectedDateButtonText: {
+    color: "green",
+  },
 });
 
 export default App;
