@@ -125,6 +125,12 @@ const TailorTastePage = ({ navigation }) => {
     setInitialQuestionAnswered(areInitialQuestionsAnswered);
   }, [answers]);
 
+  useEffect(() => {
+    const areAllQuestionsAnswered = answers.slice(0, -1).every(item => item.answer.trim() !== "") && selectedDate !== "";
+    
+    setInitialQuestionAnswered(areAllQuestionsAnswered);
+  }, [answers, selectedDate]);
+
   const handleSubmit = async () => {
     const allQuestionAnswered = answers.every(item => item.answer.trim() !== "");
 
@@ -263,7 +269,7 @@ const TailorTastePage = ({ navigation }) => {
                       onPress={showDatePicker}
                       style={styles.dateButton}
                     >
-                      <Text style={styles.dateButtonText}>
+                       <Text style={[styles.dateButtonText, selectedDate ? styles.selectedDateButtonText : {}]}>
                         {selectedDate || "Select Delivery Date"}
                       </Text>
                     </TouchableOpacity>
@@ -643,7 +649,9 @@ const styles = StyleSheet.create({
     fontSize: 15,
     fontFamily: "Inter-Regular",
   },
-
+  selectedDateButtonText: {
+    color: "black",
+  },
 });
 
 export default App;
