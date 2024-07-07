@@ -32,8 +32,7 @@ import RecommendationsPage from "./components/RecommendationsPage"; // Import Re
 import getChatGPTResponse from "./ChatGPTService"; // Import ChatGPTService
 import fetchProducts from "./FakeShop";
 import { Picker } from '@react-native-picker/picker';
-
-
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 const { height, width } = Dimensions.get("window");
 
@@ -801,8 +800,21 @@ const styles = StyleSheet.create({
   },
   radioButtonText: {
     marginLeft: 5,
-  }
-
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderColor: "gray",
+    borderRadius: 10,
+    padding: 10,
+    width: '100%',
+    textAlign: 'center',
+  },
+  dateButtonText: {
+    color: "black",
+  },
+  selectedDateButtonText: {
+    color: "green",
+  },
 });
 
 export default App;
