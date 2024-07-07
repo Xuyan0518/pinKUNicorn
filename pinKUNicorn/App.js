@@ -10,6 +10,10 @@ import {
   Image,
   TextInput,
   ScrollView,
+  SafeAreaView,
+  KeyboardAvoidingView,
+  Platform,
+  Modal,
 } from "react-native";
 import ViewPager from "@react-native-community/viewpager";
 import { Video } from "expo-av";
@@ -27,8 +31,8 @@ import { createStackNavigator } from "@react-navigation/stack";
 import RecommendationsPage from "./components/RecommendationsPage"; // Import RecommendationsPage
 import getChatGPTResponse from "./ChatGPTService"; // Import ChatGPTService
 import fetchProducts from "./FakeShop";
-import { SafeAreaView } from "react-native";
-
+import { Picker } from '@react-native-picker/picker';
+import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 const { height, width } = Dimensions.get("window");
 
@@ -106,8 +110,14 @@ const TailorTastePage = ({ navigation }) => {
     questions.map((question) => ({ question, answer: "" }))
   );
   const [initialQuestionAnswered, setInitialQuestionAnswered] = useState(false);
-  const [response, setResponse] = useState("")
+  const [response, setResponse] = useState("");
   const [showAllQuestions, setShowAllQuestions] = useState(false);
+  const [priceRange, setPriceRange] = useState("");
+  const [trendiness, setTrendiness] = useState("");
+  const [style, setStyle] = useState("");
+  const [modalVisible, setModalVisible] = useState(false);
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
 
   const handleInputChange = (text, index) => {
     const newAnswers = [...answers];
@@ -121,7 +131,7 @@ const TailorTastePage = ({ navigation }) => {
   }, [answers]);
 
   const handleSubmit = async () => {
-    const allQuestionAnswered = answers.every(item => item.answer.trim() !== "");
+    const allQuestionAnswered = answers.every(item => item.answer.trim() !== "") && priceRange !== "" && trendiness !== "" && style !== "";
 
     // if (allQuestionAnswered) {
     //   console.log("all answered")
@@ -180,7 +190,6 @@ const TailorTastePage = ({ navigation }) => {
     const prompt = `You are helping a customer find a product. Here is the description of the recipient: ${recipientDescription || defaultRecipientDescription}.\n Here is the description of the product the customer desires: ${productDescription || defaultProductDescription}.\n They are looking for products of style: ${style || defaultStyle}, and trendiness of: ${trendiness || defaultTrendiness}.\n The price range of the product is: ${priceRange || defaultPriceRange}.\n The delivery location is: ${deliveryLocation || defaultDeliveryLocation}, and preferred the products to be delivered by: ${deliveryDuration || defaultDeliveryDuration}.\n Based on the above information, recommend the customer 5 products from the products here by only listing out only the ids of the products, nothing else to be listed!!!!: \n`;
     
     try {
-      // await addProduct();
       const products = await fetchProducts();
       const productsList = products.map(product => ({
         id: product.id,
@@ -188,11 +197,8 @@ const TailorTastePage = ({ navigation }) => {
         price: product.price,
         category: product.category,
         description: product.description,
-        // stock: product.count,
-        // rating: product.rating,
         image: product.image
       }));
-      // console.log(`ProductsList: ${productsList.map(item => item.id)}`);
 
       const productsString = JSON.stringify(productsList);
       const combinedPrompt = `${prompt} ${productsString}`;
@@ -203,7 +209,6 @@ const TailorTastePage = ({ navigation }) => {
         chatGPTResponse.includes(item.id.toString())
       );
       console.log(`recommended products: ${recommendedProductList.map(product => product.id)}`);
-      //const recommendedProducts = productsList.filter(product => product.title == recommendedProductList.title);
       navigation.navigate("Recommendations", { recommendations: recommendedProductList });
     } catch (error) {
       console.error("Error:", error);
@@ -213,76 +218,202 @@ const TailorTastePage = ({ navigation }) => {
 
   const toggleShowAllQuestions = () => {
     setShowAllQuestions(!showAllQuestions);
-  }
-  
-  
+  };
+
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleConfirm = (date) => {
+    const formattedDate = date.toISOString().split("T")[0];
+    setSelectedDate(formattedDate);
+    handleInputChange(formattedDate, answers.findIndex(item => item.question === "Delivery Before"));
+    hideDatePicker();
+  };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
-      <SafeAreaView>
-        <Text style={styles.title}>Tailor Your Taste Page</Text>
-        {answers.slice(0, 2).map((item, index) => (
-          <View key={index} style={styles.questionContainer}>
-            <Text style={styles.questionText}>{item.question}</Text>
-            <TextInput
-              style={styles.descriptionInput}
-              placeholder={`Description`}
-              value={item.answer}
-              onChangeText={(text) => handleInputChange(text, index)}
-            />
-          </View>
-        ))}
-        {!showAllQuestions ? (
-          <TouchableOpacity onPress={toggleShowAllQuestions} style={styles.option}>
-            <Text style={styles.optionText}>More options</Text>
-          </TouchableOpacity>
-        ) : (
-          <TouchableOpacity onPress={toggleShowAllQuestions} style={styles.option}>
-            <Text style={styles.optionText}>Fold options</Text>
-          </TouchableOpacity>
-        )}
-        {showAllQuestions && (
-          <>
-            {answers.slice(2).map((item, index) => (
-              <View key={index + 2} style={styles.questionContainer}>
-                <Text style={styles.questionText}>{item.question}</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder={`Enter ${item.question}`}
-                  value={item.answer}
-                  onChangeText={(text) => handleInputChange(text, index + 2)}
-                />
-              </View>
-            ))}
-          </>
-        )}
-        {!initialQuestionAnswered && (
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Submit Anyway</Text>
-          </TouchableOpacity>
-        )}
-        {response ? (
-          <View style={styles.responseContainer}>
-            <Text style={styles.responseText}>{response}</Text>
-          </View>
-        ) : null}
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      style={{ flex: 1 }}
+      keyboardVerticalOffset={100}
+    >
+      <SafeAreaView contentContainerStyle={styles.scrollContainer}>
+        <ScrollView>
+          <Text style={styles.title}>Tailor Your Taste Page</Text>
+          {answers.slice(0, 2).map((item, index) => (
+            <View key={index} style={styles.questionContainer}>
+              <Text style={styles.questionText}>{item.question}</Text>
+              <TextInput
+                style={styles.descriptionInput}
+                placeholder={`Description`}
+                value={item.answer}
+                onChangeText={(text) => handleInputChange(text, index)}
+              />
+            </View>
+          ))}
+          {!showAllQuestions ? (
+            <TouchableOpacity onPress={toggleShowAllQuestions} style={styles.option}>
+              <Text style={styles.optionText}>More options</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity onPress={toggleShowAllQuestions} style={styles.option}>
+              <Text style={styles.optionText}>Fold options</Text>
+            </TouchableOpacity>
+          )}
+          {showAllQuestions && (
+            <>
+              {answers.slice(2).map((item, index) => (
+                <View key={index + 2} style={styles.questionContainer}>
+                  <Text style={styles.questionText}>{item.question}</Text>
+                  {item.question === "Price Range" && (
+                    <View>
+                      <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.priceContainer}>
+                        <Text style={styles.priceText}>{priceRange ? priceRange : "Select Price Range"}</Text>
+                      </TouchableOpacity>
+                      <Modal
+                        animationType="slide"
+                        transparent={true}
+                        visible={modalVisible}
+                        onRequestClose={() => {
+                          setModalVisible(!modalVisible);
+                        }}
+                      >
+                        <View style={styles.modalContainer}>
+                          <View style={styles.modalView}>
+                            <Text style={styles.modalTitle}>Select Price Range</Text>
+                            <Picker
+                              selectedValue={priceRange}
+                              onValueChange={(itemValue) => setPriceRange(itemValue)}
+                              style={styles.picker}
+                            >
+                              <Picker.Item label="$0 - $50" value="$0 - $50" />
+                              <Picker.Item label="$50 - $100" value="$50 - $100" />
+                              <Picker.Item label="$100 - $200" value="$100 - $200" />
+                              <Picker.Item label="$200 - $500" value="$200 - $500" />
+                              <Picker.Item label="Over $500" value="Over $500" />
+                            </Picker>
+                            <TouchableOpacity
+                              style={styles.confirmButton}
+                              onPress={() => setModalVisible(false)}
+                            >
+                              <Text style={styles.confirmButtonText}>Confirm</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      </Modal>
+                    </View>
+                  )}
+                  {item.question === "Trendiness" && (
+                    <View style={styles.radioGroup}>
+                      <TouchableOpacity
+                        onPress={() => setTrendiness("unique")}
+                        style={styles.radioButton}
+                      >
+                        <View style={trendiness === "unique" ? styles.radioSelected : styles.radioUnselected} />
+                        <Text style={styles.radioButtonText}>Unique</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => setTrendiness("trendy")}
+                        style={styles.radioButton}
+                      >
+                        <View style={trendiness === "trendy" ? styles.radioSelected : styles.radioUnselected} />
+                        <Text style={styles.radioButtonText}>Trendy</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                  {item.question === "Style" && (
+                    <View style={styles.radioGroup}>
+                      <TouchableOpacity
+                        onPress={() => setStyle("Casual")}
+                        style={styles.radioButton}
+                      >
+                        <View style={style === "Casual" ? styles.radioSelected : styles.radioUnselected} />
+                        <Text style={styles.radioButtonText}>Casual</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => setStyle("Formal")}
+                        style={styles.radioButton}
+                      >
+                        <View style={style === "Formal" ? styles.radioSelected : styles.radioUnselected} />
+                        <Text style={styles.radioButtonText}>Formal</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => setStyle("Sporty")}
+                        style={styles.radioButton}
+                      >
+                        <View style={style === "Sporty" ? styles.radioSelected : styles.radioUnselected} />
+                        <Text style={styles.radioButtonText}>Sporty</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        onPress={() => setStyle("Elegant")}
+                        style={styles.radioButton}
+                      >
+                        <View style={style === "Elegant" ? styles.radioSelected : styles.radioUnselected} />
+                        <Text style={styles.radioButtonText}>Elegant</Text>
+                      </TouchableOpacity>
+                    </View>
+                  )}
+                  {item.question === "Delivery Before" ? (
+                    <>
+                      <TouchableOpacity
+                        onPress={showDatePicker}
+                        style={styles.dateButton}
+                      >
+                        <Text style={[styles.dateButtonText, selectedDate ? styles.selectedDateButtonText : {}]}>
+                          {selectedDate || "Select Delivery Date"}
+                        </Text>
+                      </TouchableOpacity>
+                      <DateTimePickerModal
+                        isVisible={isDatePickerVisible}
+                        mode="date"
+                        onConfirm={handleConfirm}
+                        onCancel={hideDatePicker}
+                      />
+                    </>
+                  ) : (
+                    item.question !== "Price Range" && item.question !== "Trendiness" && item.question !== "Style" && (
+                      <TextInput
+                        style={styles.input}
+                        placeholder={`Enter ${item.question}`}
+                        value={item.answer}
+                        onChangeText={(text) => handleInputChange(text, index + 2)}
+                      />
+                    )
+                  )}
+                </View>
+              ))}
+            </>
+          )}
+          {!initialQuestionAnswered && (
+            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+              <Text style={styles.submitButtonText}>Submit Anyway</Text>
+            </TouchableOpacity>
+          )}
+          {response ? (
+            <View style={styles.responseContainer}>
+              <Text style={styles.responseText}>{response}</Text>
+            </View>
+          ) : null}
 
-        {initialQuestionAnswered && (
-          <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
-            <Text style={styles.submitButtonText}>Submit</Text>
-          </TouchableOpacity>
-        )}
-        {response ? (
-          <View style={styles.responseContainer}>
-            <Text style={styles.responseText}>{response}</Text>
-          </View>
-        ) : null}
+          {initialQuestionAnswered && (
+            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+              <Text style={styles.submitButtonText}>Submit</Text>
+            </TouchableOpacity>
+          )}
+          {response ? (
+            <View style={styles.responseContainer}>
+              <Text style={styles.responseText}>{response}</Text>
+            </View>
+          ) : null}
+        </ScrollView>
       </SafeAreaView>
-    </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
-
-
 
 const ProductPage = ({ navigation }) => {
   const handleProductPress = (url) => {
@@ -512,7 +643,6 @@ const styles = StyleSheet.create({
   bottomBarButton: {
     justifyContent: "center",
     alignItems: "center",
-    
   },
   bottomBarButtonActive: {
     justifyContent: "center",
@@ -532,25 +662,25 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   scrollContainer: {
+    flexGrow: 1,
     padding: 20,
     alignItems: "center",
     backgroundColor: "white",
-    flex: 1,
   },
   title: {
     fontSize: 32,
     fontWeight: "bold",
     marginTop: 10,
+    marginBottom: 15,
     fontFamily: "Inter-Bold"
   },
   questionContainer: {
-    width: "100%",
-    marginTop: 30,
-    marginBottom: 5,
+    width: '100%',
+    marginBottom: 15,
   },
   questionText: {
-    fontSize: 20,
-    marginBottom: 10,
+    fontSize: 18,
+    marginBottom: 5,
     color: "black",
     fontFamily: "Inter-Semibold"
   },
@@ -559,30 +689,34 @@ const styles = StyleSheet.create({
     borderColor: "gray",
     borderRadius: 10,
     padding: 10,
-    width: 400,
-    height: 200,
+    width: '100%',
+    height: 100,
+    textAlignVertical: 'top',
   },
   input: {
     borderWidth: 1,
-    borderColor: "gray",
+    borderColor: "#E3E3E4",
     borderRadius: 10,
-    padding: 10,
     width: 400,
+    padding: 15,
+    fontSize: 15,
   },
   submitButton: {
-    marginTop: 10,
+    marginTop: 20,
     backgroundColor: "#E94359",
-    borderRadius: 10,
-    padding: 15,
+    borderRadius: 5,
+    padding: 10,
+    width: '80%',
+    alignItems: 'center',
   },
   submitButtonText: {
     color: "white",
     textAlign: "center",
-    fontSize: 17,
-    fontFamily: "Inter-Bold"
+    fontSize: 16,
   },
   responseContainer: {
     marginTop: 20,
+    width: '100%',
   },
   responseText: {
     fontSize: 16,
@@ -591,13 +725,117 @@ const styles = StyleSheet.create({
   option: {
     padding: 8,
     alignSelf: "center",
+    borderColor: 'black',
+    borderWidth: 1,
     borderRadius: 10,
   },
   optionText: {
     fontFamily: "Inter-Regular",
+    fontSize: 14,
+  },
+  picker: {
+    height: 150,
+    width: '100%',
+    marginBottom: 15,
+  },
+  priceContainer: {
+    borderWidth: 1,
+    borderColor: "gray",
+    borderRadius: 10,
+    padding: 10,
+    width: '100%',
+    textAlign: 'center',
+  },
+  priceText: {
+    color: "black",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalView: {
+    width: '80%',
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 20,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 18,
+    marginBottom: 15,
+    fontWeight: "bold",
+  },
+  confirmButton: {
+    marginTop: 20,
+    backgroundColor: "#E94359",
+    borderRadius: 5,
+    padding: 10,
+    width: '100%',
+    textAlign: 'center',
+  },
+  confirmButtonText: {
+    color: "white",
+    textAlign: "center",
     fontSize: 16,
-    textDecorationLine: "underline"
-  }
+        textDecorationLine: "underline"
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 15,
+    borderColor: "#E3E3E4"
+  },
+  dateButtonText: {
+    color: "#878789",
+    fontSize: 15,
+    fontFamily: "Inter-Regular",
+  },
+  selectedDateButtonText: {
+    color: "black",
+  },
+  radioGroup: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+  },
+  radioButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  radioSelected: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 5,
+    borderColor: "#E94359",
+    marginRight: 10,
+  },
+  radioUnselected: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E94359",
+    marginRight: 10,
+  },
+  radioButtonText: {
+    marginLeft: 5,
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderColor: "gray",
+    borderRadius: 10,
+    padding: 10,
+    width: '100%',
+    textAlign: 'center',
+  },
+  dateButtonText: {
+    color: "black",
+  },
+  selectedDateButtonText: {
+    color: "green",
+  },
 });
 
 export default App;
