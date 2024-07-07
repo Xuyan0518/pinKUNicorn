@@ -217,11 +217,10 @@ const TailorTastePage = ({ navigation }) => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
+      style={styles.keyboardAvoidingView}
       keyboardVerticalOffset={100}
     >
-      <SafeAreaView contentContainerStyle={styles.scrollContainer}>
-        <ScrollView>
+      <SafeAreaView contentContainerStyle={styles.safeareaScrollContainer}>
           <View style={styles.headerButtons}>
             <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
               <Text style={styles.buttonText}>&lt;Back</Text>
@@ -230,6 +229,7 @@ const TailorTastePage = ({ navigation }) => {
               <Text style={styles.buttonText}>Shop more&gt;</Text>
             </TouchableOpacity>
           </View>
+          <ScrollView style={styles.scrollContainer}>
           <Text style={styles.title}>Tailor Your Taste Page</Text>
           {answers.slice(0, 2).map((item, index) => (
             <View key={index} style={styles.questionContainer}>
@@ -657,11 +657,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 20,
   },
-  scrollContainer: {
+  safeareaScrollContainer: {
     flexGrow: 1,
-    padding: 20,
     alignItems: "center",
     backgroundColor: "white",
+  },
+  scrollContainer: {
+    padding: 20
   },
   title: {
     fontSize: 32,
@@ -682,12 +684,12 @@ const styles = StyleSheet.create({
   },
   descriptionInput: {
     borderWidth: 1,
-    borderColor: "gray",
+    borderColor: "#B0B0B0",
     borderRadius: 10,
-    padding: 10,
-    width: '100%',
-    height: 100,
-    textAlignVertical: 'top',
+    width: 400,
+    padding: 15,
+    fontSize: 15,
+    height: 150,
   },
   input: {
     borderWidth: 1,
@@ -722,13 +724,12 @@ const styles = StyleSheet.create({
   option: {
     padding: 8,
     alignSelf: "center",
-    borderColor: 'black',
-    borderWidth: 1,
     borderRadius: 10,
   },
   optionText: {
     fontFamily: "Inter-Regular",
     fontSize: 14,
+    textDecorationLine: "underline"
   },
   picker: {
     height: 150,
@@ -838,7 +839,6 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     width: "100%",
     paddingHorizontal: 0,
-    marginBottom: 20,
     backgroundColor: '#E94359',
   },
   backButton: {
@@ -860,6 +860,9 @@ const styles = StyleSheet.create({
     height: "100%",
     resizeMode: "cover",
   },
+  keyboardAvoidingView: {
+    flex: 1,
+  }
 });
 
 export default App;
