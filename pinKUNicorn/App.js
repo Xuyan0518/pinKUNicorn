@@ -34,7 +34,6 @@ import fetchProducts from "./FakeShop";
 import { Picker } from '@react-native-picker/picker';
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
-
 const { height, width } = Dimensions.get("window");
 
 const videos = [
@@ -395,8 +394,6 @@ const TailorTastePage = ({ navigation }) => {
   );
 };
 
-
-
 const ProductPage = ({ navigation }) => {
   const handleProductPress = (url) => {
     Linking.openURL(url);
@@ -677,10 +674,11 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "gray",
+    borderColor: "#E3E3E4",
     borderRadius: 10,
-    padding: 10,
-    width: '100%',
+    width: 400,
+    padding: 15,
+    fontSize: 15,
   },
   submitButton: {
     marginTop: 20,
@@ -760,6 +758,21 @@ const styles = StyleSheet.create({
     color: "white",
     textAlign: "center",
     fontSize: 16,
+        textDecorationLine: "underline"
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 15,
+    borderColor: "#E3E3E4"
+  },
+  dateButtonText: {
+    color: "#878789",
+    fontSize: 15,
+    fontFamily: "Inter-Regular",
+  },
+  selectedDateButtonText: {
+    color: "black",
   },
   radioGroup: {
     flexDirection: 'row',
