@@ -31,7 +31,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import RecommendationsPage from "./components/RecommendationsPage"; // Import RecommendationsPage
 import getChatGPTResponse from "./ChatGPTService"; // Import ChatGPTService
 import fetchProducts from "./FakeShop";
-import { Picker } from '@react-native-picker/picker';
+import { Picker } from "@react-native-picker/picker";
 import DateTimePickerModal from "react-native-modal-datetime-picker";
 
 const { height, width } = Dimensions.get("window");
@@ -75,7 +75,7 @@ const questions = [
   "Trendiness",
   "Style",
   "Delivery Location",
-  "Delivery Before"
+  "Delivery Before",
 ];
 
 const VideoItem = ({ source, isActive }) => {
@@ -106,6 +106,16 @@ const VideoItem = ({ source, isActive }) => {
 };
 
 const TailorTastePage = ({ navigation }) => {
+  const questions = [
+    "Describe Your Recipient",
+    "Describe Your Product",
+    "Price Range",
+    "Trendiness",
+    "Style",
+    "Delivery Location",
+    "Delivery Before",
+  ];
+
   const [answers, setAnswers] = useState(
     questions.map((question) => ({ question, answer: "" }))
   );
@@ -126,12 +136,17 @@ const TailorTastePage = ({ navigation }) => {
   };
 
   useEffect(() => {
-    const areInitialQuestionsAnswered = answers[0].answer.trim() !== "" && answers[1].answer.trim() !== "";
+    const areInitialQuestionsAnswered =
+      answers[0].answer.trim() !== "" && answers[1].answer.trim() !== "";
     setInitialQuestionAnswered(areInitialQuestionsAnswered);
   }, [answers]);
 
   const handleSubmit = async () => {
-    const allQuestionAnswered = answers.every(item => item.answer.trim() !== "") && priceRange !== "" && trendiness !== "" && style !== "";
+    const allQuestionAnswered =
+      answers.every((item) => item.answer.trim() !== "") &&
+      priceRange !== "" &&
+      trendiness !== "" &&
+      style !== "";
 
     if (allQuestionAnswered) {
       console.log("all answered");
@@ -139,77 +154,59 @@ const TailorTastePage = ({ navigation }) => {
       console.log("Please answer all questions");
     }
 
-    const {
-      recipientDescription = "",
-      productDescription= "",
-      priceRange = "",
-      trendiness = "",
-      style = "",
-      deliveryLocation = "",
-      deliveryDuration = "",
-    } = answers.reduce(
-      (acc, { question, answer }) => {
-        switch (question) {
-          case "Describe Your Recipient":
-            acc.recipientDescription = answer;
-            break;
-          case "Describe Your Product":
-            acc.productDescription = answer;
-            break;
-          case "Price Range":
-            acc.priceRange = answer;
-            break;
-          case "Trendiness":
-            acc.trendiness = answer;
-            break;
-          case "Style":
-            acc.style = answer;
-            break;
-          case "Delivery Location":
-            acc.deliveryLocation = answer;
-            break;
-          case "Delivery Before":
-            acc.deliveryDuration = answer;
-            break;
-          default:
-            break;
-        }
-        return acc;
-      },
-      {}
-    );
-    
-    const defaultRecipientDescription = "no specific recipient description provided";
-    const defaultProductDescription = "no specific product description provided";
-    const defaultStyle = "no specific style";
-    const defaultTrendiness = "no specific trendiness";
-    const defaultPriceRange = "no specific price range";
-    const defaultDeliveryLocation = "no specific location";
-    const defaultDeliveryDuration = "no specific delivery time";
-    
-    const prompt = `You are helping a customer find a product. Here is the description of the recipient: ${recipientDescription || defaultRecipientDescription}.\n Here is the description of the product the customer desires: ${productDescription || defaultProductDescription}.\n They are looking for products of style: ${style || defaultStyle}, and trendiness of: ${trendiness || defaultTrendiness}.\n The price range of the product is: ${priceRange || defaultPriceRange}.\n The delivery location is: ${deliveryLocation || defaultDeliveryLocation}, and prefers the products to be delivered by: ${deliveryDuration || defaultDeliveryDuration}.\n Based on the above information, recommend the customer 5 products from the products here by only listing out only the ids of the products, nothing else to be listed!!!!: \n`;
-    
+    const prompt = `
+      You are helping a customer find a product. 
+      Here is the description of the recipient: ${
+        answers.find((a) => a.question === "Describe Your Recipient").answer ||
+        "no specific recipient description provided"
+      }.
+      Here is the description of the product the customer desires: ${
+        answers.find((a) => a.question === "Describe Your Product").answer ||
+        "no specific product description provided"
+      }.
+      They are looking for products of style: ${
+        style || "no specific style"
+      }, and trendiness of: ${trendiness || "no specific trendiness"}.
+      The price range of the product is: ${
+        priceRange || "no specific price range"
+      }.
+      The delivery location is: ${
+        answers.find((a) => a.question === "Delivery Location").answer ||
+        "no specific location"
+      }, and prefers the products to be delivered by: ${
+      answers.find((a) => a.question === "Delivery Before").answer ||
+      "no specific delivery time"
+    }.
+      Based on the above information, recommend the customer 5 products from the products here by only listing out only the ids of the products, nothing else to be listed!!!!
+    `;
+
     try {
       const products = await fetchProducts();
-      const productsList = products.map(product => ({
+      const productsList = products.map((product) => ({
         id: product.id,
         title: product.title,
         price: product.price,
         category: product.category,
         description: product.description,
-        image: product.image
+        image: product.image,
       }));
 
       const productsString = JSON.stringify(productsList);
       const combinedPrompt = `${prompt} ${productsString}`;
-      console.log(combinedPrompt);
+      //console.log(combinedPrompt);
       const chatGPTResponse = await getChatGPTResponse(combinedPrompt);
-      console.log(`GPT result: ${chatGPTResponse}`);
-      const recommendedProductList = productsList.filter(item => 
+      //console.log(`GPT result: ${chatGPTResponse}`);
+      const recommendedProductList = productsList.filter((item) =>
         chatGPTResponse.includes(item.id.toString())
       );
-      console.log(`recommended products: ${recommendedProductList.map(product => product.id)}`);
-      navigation.navigate("Recommendations", { recommendations: recommendedProductList });
+      console.log(
+        `recommended products: ${recommendedProductList.map(
+          (product) => product.id
+        )}`
+      );
+      navigation.navigate("Recommendations", {
+        recommendations: recommendedProductList,
+      });
     } catch (error) {
       console.error("Error:", error);
       setResponse("An error occurred while fetching the response.");
@@ -231,7 +228,10 @@ const TailorTastePage = ({ navigation }) => {
   const handleConfirm = (date) => {
     const formattedDate = date.toISOString().split("T")[0];
     setSelectedDate(formattedDate);
-    handleInputChange(formattedDate, answers.findIndex(item => item.question === "Delivery Before"));
+    handleInputChange(
+      formattedDate,
+      answers.findIndex((item) => item.question === "Delivery Before")
+    );
     hideDatePicker();
   };
 
@@ -242,34 +242,46 @@ const TailorTastePage = ({ navigation }) => {
       keyboardVerticalOffset={100}
     >
       <SafeAreaView style={styles.safeareaScrollContainer}>
-          <View style={styles.headerButtons}>
-            <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-              <Text style={styles.buttonText}>&lt;Back</Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => navigation.navigate("Shop")} style={styles.shopButton}>
-              <Text style={styles.buttonText}>Shop more&gt;</Text>
-            </TouchableOpacity>
-          </View>
-          <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <View style={styles.headerButtons}>
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={styles.backButton}
+          >
+            <Text style={styles.buttonText}>&lt;Back</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Shop")}
+            style={styles.shopButton}
+          >
+            <Text style={styles.buttonText}>Shop more&gt;</Text>
+          </TouchableOpacity>
+        </View>
+        <ScrollView contentContainerStyle={styles.scrollContainer}>
           <Text style={styles.title}>Tailor Your Taste</Text>
           {answers.slice(0, 2).map((item, index) => (
             <View key={index} style={styles.questionContainer}>
               <Text style={styles.questionText}>{item.question}</Text>
               <TextInput
                 style={styles.descriptionInput}
-                placeholder={`Description`}
-                placeholderTextColor={"#878789"}
+                placeholder="Description"
+                placeholderTextColor="#878789"
                 value={item.answer}
                 onChangeText={(text) => handleInputChange(text, index)}
               />
             </View>
           ))}
           {!showAllQuestions ? (
-            <TouchableOpacity onPress={toggleShowAllQuestions} style={styles.option}>
+            <TouchableOpacity
+              onPress={toggleShowAllQuestions}
+              style={styles.option}
+            >
               <Text style={styles.optionText}>More options</Text>
             </TouchableOpacity>
           ) : (
-            <TouchableOpacity onPress={toggleShowAllQuestions} style={styles.option}>
+            <TouchableOpacity
+              onPress={toggleShowAllQuestions}
+              style={styles.option}
+            >
               <Text style={styles.optionText}>Fold options</Text>
             </TouchableOpacity>
           )}
@@ -280,8 +292,13 @@ const TailorTastePage = ({ navigation }) => {
                   <Text style={styles.questionText}>{item.question}</Text>
                   {item.question === "Price Range" && (
                     <View>
-                      <TouchableOpacity onPress={() => setModalVisible(true)} style={styles.priceContainer}>
-                        <Text style={styles.priceText}>{priceRange ? priceRange : "Select Price Range"}</Text>
+                      <TouchableOpacity
+                        onPress={() => setModalVisible(true)}
+                        style={styles.priceContainer}
+                      >
+                        <Text style={styles.priceText}>
+                          {priceRange ? priceRange : "Select Price Range"}
+                        </Text>
                       </TouchableOpacity>
                       <Modal
                         animationType="slide"
@@ -293,23 +310,49 @@ const TailorTastePage = ({ navigation }) => {
                       >
                         <View style={styles.modalContainer}>
                           <View style={styles.modalView}>
-                            <Text style={styles.modalTitle}>Select Price Range</Text>
+                            <Text style={styles.modalTitle}>
+                              Select Price Range
+                            </Text>
                             <Picker
                               selectedValue={priceRange}
-                              onValueChange={(itemValue) => setPriceRange(itemValue)}
+                              onValueChange={(itemValue) =>
+                                setPriceRange(itemValue)
+                              }
                               style={styles.picker}
                             >
                               <Picker.Item label="$0 - $50" value="$0 - $50" />
-                              <Picker.Item label="$50 - $100" value="$50 - $100" />
-                              <Picker.Item label="$100 - $200" value="$100 - $200" />
-                              <Picker.Item label="$200 - $500" value="$200 - $500" />
-                              <Picker.Item label="Over $500" value="Over $500" />
+                              <Picker.Item
+                                label="$50 - $100"
+                                value="$50 - $100"
+                              />
+                              <Picker.Item
+                                label="$100 - $200"
+                                value="$100 - $200"
+                              />
+                              <Picker.Item
+                                label="$200 - $500"
+                                value="$200 - $500"
+                              />
+                              <Picker.Item
+                                label="Over $500"
+                                value="Over $500"
+                              />
                             </Picker>
                             <TouchableOpacity
                               style={styles.confirmButton}
-                              onPress={() => setModalVisible(false)}
+                              onPress={() => {
+                                setModalVisible(false);
+                                handleInputChange(
+                                  priceRange,
+                                  answers.findIndex(
+                                    (item) => item.question === "Price Range"
+                                  )
+                                );
+                              }}
                             >
-                              <Text style={styles.confirmButtonText}>Confirm</Text>
+                              <Text style={styles.confirmButtonText}>
+                                Confirm
+                              </Text>
                             </TouchableOpacity>
                           </View>
                         </View>
@@ -319,17 +362,45 @@ const TailorTastePage = ({ navigation }) => {
                   {item.question === "Trendiness" && (
                     <View style={styles.radioGroup}>
                       <TouchableOpacity
-                        onPress={() => setTrendiness("unique")}
+                        onPress={() => {
+                          setTrendiness("Unique");
+                          handleInputChange(
+                            "Unique",
+                            answers.findIndex(
+                              (item) => item.question === "Trendiness"
+                            )
+                          );
+                        }}
                         style={styles.radioButton}
                       >
-                        <View style={trendiness === "unique" ? styles.radioSelected : styles.radioUnselected} />
+                        <View
+                          style={
+                            trendiness === "Unique"
+                              ? styles.radioSelected
+                              : styles.radioUnselected
+                          }
+                        />
                         <Text style={styles.radioButtonText}>Unique</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        onPress={() => setTrendiness("trendy")}
+                        onPress={() => {
+                          setTrendiness("Trendy");
+                          handleInputChange(
+                            "Trendy",
+                            answers.findIndex(
+                              (item) => item.question === "Trendiness"
+                            )
+                          );
+                        }}
                         style={styles.radioButton}
                       >
-                        <View style={trendiness === "trendy" ? styles.radioSelected : styles.radioUnselected} />
+                        <View
+                          style={
+                            trendiness === "Trendy"
+                              ? styles.radioSelected
+                              : styles.radioUnselected
+                          }
+                        />
                         <Text style={styles.radioButtonText}>Trendy</Text>
                       </TouchableOpacity>
                     </View>
@@ -337,31 +408,87 @@ const TailorTastePage = ({ navigation }) => {
                   {item.question === "Style" && (
                     <View style={styles.radioGroup}>
                       <TouchableOpacity
-                        onPress={() => setStyle("Casual")}
+                        onPress={() => {
+                          setStyle("Casual");
+                          handleInputChange(
+                            "Casual",
+                            answers.findIndex(
+                              (item) => item.question === "Style"
+                            )
+                          );
+                        }}
                         style={styles.radioButton}
                       >
-                        <View style={style === "Casual" ? styles.radioSelected : styles.radioUnselected} />
+                        <View
+                          style={
+                            style === "Casual"
+                              ? styles.radioSelected
+                              : styles.radioUnselected
+                          }
+                        />
                         <Text style={styles.radioButtonText}>Casual</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        onPress={() => setStyle("Formal")}
+                        onPress={() => {
+                          setStyle("Formal");
+                          handleInputChange(
+                            "Formal",
+                            answers.findIndex(
+                              (item) => item.question === "Style"
+                            )
+                          );
+                        }}
                         style={styles.radioButton}
                       >
-                        <View style={style === "Formal" ? styles.radioSelected : styles.radioUnselected} />
+                        <View
+                          style={
+                            style === "Formal"
+                              ? styles.radioSelected
+                              : styles.radioUnselected
+                          }
+                        />
                         <Text style={styles.radioButtonText}>Formal</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        onPress={() => setStyle("Sporty")}
+                        onPress={() => {
+                          setStyle("Sporty");
+                          handleInputChange(
+                            "Sporty",
+                            answers.findIndex(
+                              (item) => item.question === "Style"
+                            )
+                          );
+                        }}
                         style={styles.radioButton}
                       >
-                        <View style={style === "Sporty" ? styles.radioSelected : styles.radioUnselected} />
+                        <View
+                          style={
+                            style === "Sporty"
+                              ? styles.radioSelected
+                              : styles.radioUnselected
+                          }
+                        />
                         <Text style={styles.radioButtonText}>Sporty</Text>
                       </TouchableOpacity>
                       <TouchableOpacity
-                        onPress={() => setStyle("Elegant")}
+                        onPress={() => {
+                          setStyle("Elegant");
+                          handleInputChange(
+                            "Elegant",
+                            answers.findIndex(
+                              (item) => item.question === "Style"
+                            )
+                          );
+                        }}
                         style={styles.radioButton}
                       >
-                        <View style={style === "Elegant" ? styles.radioSelected : styles.radioUnselected} />
+                        <View
+                          style={
+                            style === "Elegant"
+                              ? styles.radioSelected
+                              : styles.radioUnselected
+                          }
+                        />
                         <Text style={styles.radioButtonText}>Elegant</Text>
                       </TouchableOpacity>
                     </View>
@@ -372,7 +499,12 @@ const TailorTastePage = ({ navigation }) => {
                         onPress={showDatePicker}
                         style={styles.dateButton}
                       >
-                        <Text style={[styles.dateButtonText, selectedDate ? styles.selectedDateButtonText : {}]}>
+                        <Text
+                          style={[
+                            styles.dateButtonText,
+                            selectedDate ? styles.selectedDateButtonText : {},
+                          ]}
+                        >
                           {selectedDate || "Select Delivery Date"}
                         </Text>
                       </TouchableOpacity>
@@ -384,13 +516,17 @@ const TailorTastePage = ({ navigation }) => {
                       />
                     </>
                   ) : (
-                    item.question !== "Price Range" && item.question !== "Trendiness" && item.question !== "Style" && (
+                    item.question !== "Price Range" &&
+                    item.question !== "Trendiness" &&
+                    item.question !== "Style" && (
                       <TextInput
                         style={styles.input}
                         placeholder={`Enter ${item.question}`}
-                        placeholderTextColor={"#878789"}
+                        placeholderTextColor="#878789"
                         value={item.answer}
-                        onChangeText={(text) => handleInputChange(text, index + 2)}
+                        onChangeText={(text) =>
+                          handleInputChange(text, index + 2)
+                        }
                       />
                     )
                   )}
@@ -399,7 +535,10 @@ const TailorTastePage = ({ navigation }) => {
             </>
           )}
           {!initialQuestionAnswered && (
-            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleSubmit}
+            >
               <Text style={styles.submitButtonText}>Submit Anyway</Text>
             </TouchableOpacity>
           )}
@@ -408,17 +547,14 @@ const TailorTastePage = ({ navigation }) => {
               <Text style={styles.responseText}>{response}</Text>
             </View>
           ) : null}
-
           {initialQuestionAnswered && (
-            <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+            <TouchableOpacity
+              style={styles.submitButton}
+              onPress={handleSubmit}
+            >
               <Text style={styles.submitButtonText}>Submit</Text>
             </TouchableOpacity>
           )}
-          {response ? (
-            <View style={styles.responseContainer}>
-              <Text style={styles.responseText}>{response}</Text>
-            </View>
-          ) : null}
         </ScrollView>
       </SafeAreaView>
     </KeyboardAvoidingView>
@@ -428,7 +564,10 @@ const TailorTastePage = ({ navigation }) => {
 const ShopPage = () => {
   return (
     <SafeAreaView style={styles.container}>
-      <Image source={require("./resources/shop_demo.jpg")} style={styles.shopImage} />
+      <Image
+        source={require("./resources/shop_demo.jpg")}
+        style={styles.shopImage}
+      />
     </SafeAreaView>
   );
 };
@@ -556,7 +695,11 @@ const App = () => {
           component={MainScreen}
           options={{ headerShown: false }}
         />
-        <Stack.Screen name="TailorTaste" component={TailorTastePage} options={{ headerShown: false }}/>
+        <Stack.Screen
+          name="TailorTaste"
+          component={TailorTastePage}
+          options={{ headerShown: false }}
+        />
         <Stack.Screen name="Recommendations" component={RecommendationsPage} />
         <Stack.Screen name="Shop" component={ShopPage} />
       </Stack.Navigator>
@@ -577,14 +720,14 @@ const styles = StyleSheet.create({
   },
   videoContainer: {
     flex: 1,
-    backgroundColor: "black"
+    backgroundColor: "black",
   },
   video: {
     flex: 1,
   },
   productPage: {
     flex: 1,
-    backgroundColor: "black"
+    backgroundColor: "black",
   },
   productPageTitle: {
     fontSize: 32,
@@ -648,7 +791,7 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 18,
     fontWeight: "bold",
-    textDecorationLine: "underline"
+    textDecorationLine: "underline",
   },
   bottomBar: {
     position: "absolute",
@@ -693,17 +836,17 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginTop: 10,
     marginBottom: 15,
-    fontFamily: "Inter-Bold"
+    fontFamily: "Inter-Bold",
   },
   questionContainer: {
-    width: '100%',
+    width: "100%",
     marginBottom: 15,
   },
   questionText: {
     fontSize: 18,
     marginBottom: 5,
     color: "black",
-    fontFamily: "Inter-Semibold"
+    fontFamily: "Inter-Semibold",
   },
   descriptionInput: {
     borderWidth: 1,
@@ -727,9 +870,9 @@ const styles = StyleSheet.create({
     backgroundColor: "#E94359",
     borderRadius: 5,
     padding: 10,
-    width: '80%',
-    alignItems: 'center',
-    alignSelf: 'center',
+    width: "80%",
+    alignItems: "center",
+    alignSelf: "center",
   },
   submitButtonText: {
     color: "white",
@@ -738,7 +881,7 @@ const styles = StyleSheet.create({
   },
   responseContainer: {
     marginTop: 20,
-    width: '100%',
+    width: "100%",
   },
   responseText: {
     fontSize: 16,
@@ -752,11 +895,11 @@ const styles = StyleSheet.create({
   optionText: {
     fontFamily: "Inter-Regular",
     fontSize: 14,
-    textDecorationLine: "underline"
+    textDecorationLine: "underline",
   },
   picker: {
     height: 150,
-    width: '100%',
+    width: "100%",
     marginBottom: 15,
   },
   priceContainer: {
@@ -768,7 +911,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   priceText: {
-    color: '#878789'
+    color: "#878789",
   },
   modalContainer: {
     flex: 1,
@@ -777,7 +920,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(0,0,0,0.5)",
   },
   modalView: {
-    width: '80%',
+    width: "80%",
     backgroundColor: "white",
     borderRadius: 10,
     padding: 20,
@@ -793,14 +936,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#E94359",
     borderRadius: 5,
     padding: 10,
-    width: '100%',
-    textAlign: 'center',
+    width: "100%",
+    textAlign: "center",
   },
   confirmButtonText: {
     color: "white",
     textAlign: "center",
     fontSize: 16,
-    textDecorationLine: "underline"
+    textDecorationLine: "underline",
   },
   dateButton: {
     borderWidth: 1,
@@ -817,13 +960,13 @@ const styles = StyleSheet.create({
     color: "black",
   },
   radioGroup: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
+    flexDirection: "row",
+    justifyContent: "space-around",
     marginBottom: 20,
   },
   radioButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     marginTop: 10,
   },
   radioSelected: {
@@ -843,7 +986,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
   radioButtonText: {
-
     marginLeft: 5,
   },
   headerButtons: {
@@ -871,8 +1013,8 @@ const styles = StyleSheet.create({
   },
   keyboardAvoidingView: {
     flex: 1,
-    justifyContent: "center"
-  }
+    justifyContent: "center",
+  },
 });
 
 export default App;
