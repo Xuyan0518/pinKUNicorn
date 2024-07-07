@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 
-const API_KEY = 'api key'; // Replace with your actual API key
+const API_KEY = 'api'; 
 const API_URL = 'https://api.openai.com/v1/chat/completions';
 
 const getChatGPTResponse = async (userInput) => {
@@ -9,9 +9,9 @@ const getChatGPTResponse = async (userInput) => {
     const response = await axios.post(
       API_URL,
       {
-        model: 'gpt-3.5-turbo', // Or 'gpt-4', depending on the model you're using
+        model: 'gpt-3.5-turbo',
         messages: [
-          { role: 'system', content: 'You are a helpful assistant.' }, // Optional system message
+          { role: 'system', content: 'You are a helpful assistant.' }, 
           { role: 'user', content: userInput }
         ],
         max_tokens: 1000,
@@ -25,7 +25,6 @@ const getChatGPTResponse = async (userInput) => {
       }
     );
     const result = response.data.choices[0].message.content.trim().split(', ');
-    //console.log(`GPT Result: ${result}`);
     return result;
   } catch (error) {
     console.error('Error fetching data from OpenAI:', error);

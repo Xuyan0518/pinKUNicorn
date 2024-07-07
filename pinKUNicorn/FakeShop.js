@@ -88,8 +88,6 @@ const fetchProducts = async () => {
   try {
     const response = await axios.get(API_URL);
     let products = response.data;
-
-    // Combine existing products with new products
     const existingIds = new Set(products.map(p => p.id));
     const filteredNewProducts = newProducts.filter(p => !existingIds.has(p.id));
     products = [...products, ...filteredNewProducts];
