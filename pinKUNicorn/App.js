@@ -34,6 +34,7 @@ import fetchProducts from "./FakeShop";
 import { Picker } from '@react-native-picker/picker';
 
 
+
 const { height, width } = Dimensions.get("window");
 
 const videos = [
@@ -116,6 +117,8 @@ const TailorTastePage = ({ navigation }) => {
   const [trendiness, setTrendiness] = useState("");
   const [style, setStyle] = useState("");
   const [modalVisible, setModalVisible] = useState(false);
+  const [isDatePickerVisible, setDatePickerVisibility] = useState(false);
+  const [selectedDate, setSelectedDate] = useState("");
 
   const handleInputChange = (text, index) => {
     const newAnswers = [...answers];
@@ -195,6 +198,21 @@ const TailorTastePage = ({ navigation }) => {
 
   const toggleShowAllQuestions = () => {
     setShowAllQuestions(!showAllQuestions);
+  };
+
+  const showDatePicker = () => {
+    setDatePickerVisibility(true);
+  };
+
+  const hideDatePicker = () => {
+    setDatePickerVisibility(false);
+  };
+
+  const handleConfirm = (date) => {
+    const formattedDate = date.toISOString().split("T")[0];
+    setSelectedDate(formattedDate);
+    handleInputChange(formattedDate, answers.findIndex(item => item.question === "Delivery Before"));
+    hideDatePicker();
   };
 
   return (
@@ -319,13 +337,32 @@ const TailorTastePage = ({ navigation }) => {
                       </TouchableOpacity>
                     </View>
                   )}
-                  {item.question !== "Price Range" && item.question !== "Trendiness" && item.question !== "Style" && (
-                    <TextInput
-                      style={styles.input}
-                      placeholder={`Enter ${item.question}`}
-                      value={item.answer}
-                      onChangeText={(text) => handleInputChange(text, index + 2)}
-                    />
+                  {item.question === "Delivery Before" ? (
+                    <>
+                      <TouchableOpacity
+                        onPress={showDatePicker}
+                        style={styles.dateButton}
+                      >
+                        <Text style={[styles.dateButtonText, selectedDate ? styles.selectedDateButtonText : {}]}>
+                          {selectedDate || "Select Delivery Date"}
+                        </Text>
+                      </TouchableOpacity>
+                      <DateTimePickerModal
+                        isVisible={isDatePickerVisible}
+                        mode="date"
+                        onConfirm={handleConfirm}
+                        onCancel={hideDatePicker}
+                      />
+                    </>
+                  ) : (
+                    item.question !== "Price Range" && item.question !== "Trendiness" && item.question !== "Style" && (
+                      <TextInput
+                        style={styles.input}
+                        placeholder={`Enter ${item.question}`}
+                        value={item.answer}
+                        onChangeText={(text) => handleInputChange(text, index + 2)}
+                      />
+                    )
                   )}
                 </View>
               ))}
@@ -341,7 +378,7 @@ const TailorTastePage = ({ navigation }) => {
               <Text style={styles.responseText}>{response}</Text>
             </View>
           ) : null}
-  
+
           {initialQuestionAnswered && (
             <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
               <Text style={styles.submitButtonText}>Submit</Text>
@@ -638,10 +675,11 @@ const styles = StyleSheet.create({
   },
   input: {
     borderWidth: 1,
-    borderColor: "gray",
+    borderColor: "#E3E3E4",
     borderRadius: 10,
-    padding: 10,
-    width: '100%',
+    width: 400,
+    padding: 15,
+    fontSize: 15,
   },
   submitButton: {
     marginTop: 20,
@@ -721,6 +759,21 @@ const styles = StyleSheet.create({
     color: "white",
     textAlign: "center",
     fontSize: 16,
+        textDecorationLine: "underline"
+  },
+  dateButton: {
+    borderWidth: 1,
+    borderRadius: 10,
+    padding: 15,
+    borderColor: "#E3E3E4"
+  },
+  dateButtonText: {
+    color: "#878789",
+    fontSize: 15,
+    fontFamily: "Inter-Regular",
+  },
+  selectedDateButtonText: {
+    color: "black",
   },
   radioGroup: {
     flexDirection: 'row',
@@ -749,6 +802,7 @@ const styles = StyleSheet.create({
   radioButtonText: {
     marginLeft: 5,
   }
+
 });
 
 export default App;
