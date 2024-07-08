@@ -193,7 +193,7 @@ const TailorTastePage = ({ navigation }) => {
 
       const productsString = JSON.stringify(productsList);
       const combinedPrompt = `${prompt} ${productsString}`;
-      //console.log(combinedPrompt);
+      console.log(combinedPrompt);
       const chatGPTResponse = await getChatGPTResponse(combinedPrompt);
       //console.log(`GPT result: ${chatGPTResponse}`);
       const recommendedProductList = productsList.filter((item) =>
